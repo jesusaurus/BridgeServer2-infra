@@ -1,0 +1,2 @@
+template_path: templates/bridgeserver2-common.yaml
+stack_name: bridgeserver2-common

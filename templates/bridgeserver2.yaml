@@ -1,24 +1,3 @@
-# This CF script is for creating an AWS elastic beanstalk application.
-#
-# Usage:
-#   1. Run the boostrap script to setup required resources for the app.
-#   2. Create the app with `aws cloudformation --create-stack` command
-#   3. Update the stack with `aws cloudformation --update-stack` command
-#
-# initial creation:
-#   aws --profile aws.admin.user --region us-east-1 cloudformation \
-#     create-stack --stack-name foo-develop --capabilities CAPABILITY_NAMED_IAM \
-#     --on-failure DELETE --template-body file://cf_templates/eb_app.yml \
-#     --parameters ParameterKey=EC2InstanceType,ParameterValue=t2.micro \
-#     ...[all params neeeded for app]
-#
-# updates:
-#   aws --profile aws.bootstrap.user --region us-east-1 cloudformation \
-#     update-stack --stack-name foo-develop --capabilities CAPABILITY_NAMED_IAM \
-#     --template-body file://cf_templates/eb_app.yml \
-#     --parameters ParameterKey=EC2InstanceType,ParameterValue=t2.micro \
-#     ...[all params neeeded for app]
-#
 Description: Resources for BridgeServer2 Application
 AWSTemplateFormatVersion: 2010-09-09
 Parameters:
@@ -71,9 +50,8 @@ Parameters:
   EC2InstanceType:
     Type: String
     Description: Instance type to use for Elastic Beanstalk Instances
-    Default: t2.micro
+    Default: t2.small
     AllowedValues:
-      - t1.micro
       - t2.nano
       - t2.micro
       - t2.small
@@ -81,69 +59,6 @@ Parameters:
       - t2.large
       - t2.xlarge
       - t2.2xlarge
-      - m1.small
-      - m1.medium
-      - m1.large
-      - m1.xlarge
-      - m3.medium
-      - m3.large
-      - m3.xlarge
-      - m3.2xlarge
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
-      - m4.10xlarge
-      - m4.16xlarge
-      - m2.xlarge
-      - m2.2xlarge
-      - m2.4xlarge
-      - cr1.8xlarge
-      - r3.large
-      - r3.xlarge
-      - r3.2xlarge
-      - r3.4xlarge
-      - r3.8xlarge
-      - r4.large
-      - r4.xlarge
-      - r4.2xlarge
-      - r4.4xlarge
-      - r4.8xlarge
-      - r4.16xlarge
-      - x1.16xlarge
-      - x1.32xlarge
-      - i2.xlarge
-      - i2.2xlarge
-      - i2.4xlarge
-      - i2.8xlarge
-      - hi1.4xlarge
-      - hs1.8xlarge
-      - c1.medium
-      - c1.xlarge
-      - c3.large
-      - c3.xlarge
-      - c3.2xlarge
-      - c3.4xlarge
-      - c3.8xlarge
-      - c4.large
-      - c4.xlarge
-      - c4.2xlarge
-      - c4.4xlarge
-      - c4.8xlarge
-      - cc1.4xlarge
-      - cc2.8xlarge
-      - g2.2xlarge
-      - g2.8xlarge
-      - cg1.4xlarge
-      - p2.xlarge
-      - p2.8xlarge
-      - p2.16xlarge
-      - d2.xlarge
-      - d2.2xlarge
-      - d2.4xlarge
-      - d2.8xlarge
-      - f1.2xlarge
-      - f1.16xlarge
   Env:
     Type: String
     Default: develop
@@ -157,7 +72,7 @@ Resources:
   AWSEBConfigurationTemplate:
     Type: 'AWS::ElasticBeanstalk::ConfigurationTemplate'
     Properties:
-      ApplicationName: !Ref AWSEBApplication
+      ApplicationName: !ImportValue us-east-1-bridgeserver2-common-BeanstalkAppName
       SolutionStackName: !Ref AwsSolutionStackName
       OptionSettings:
         # EB environment options
@@ -173,12 +88,6 @@ Resources:
         - Namespace: 'aws:autoscaling:launchconfiguration'
           OptionName: InstanceType
           Value: !Ref EC2InstanceType
-        - Namespace: 'aws:autoscaling:launchconfiguration'
-          OptionName: SecurityGroups
-          Value: !Join
-            - '-'
-            - - !Ref 'AWS::StackName'
-              - AWSEC2SecurityGroup
         - Namespace: 'aws:autoscaling:updatepolicy:rollingupdate'
           OptionName: RollingUpdateEnabled
           Value: true
@@ -218,18 +127,12 @@ Resources:
         - Namespace: 'aws:elasticbeanstalk:xray'
           OptionName: XRayEnabled
           Value: false
-        - Namespace: 'aws:elb:loadbalancer'
-          OptionName: LoadBalancerHTTPPort
-          Value: 80
-        - Namespace: 'aws:elb:healthcheck'
-          OptionName: Target
-          Value: !Ref AppHealthcheckUrl
-        - Namespace: 'aws:elb:listener:80'
-          OptionName: InstanceProtocol
+        - Namespace: 'aws:elasticbeanstalk:environment'
+          OptionName: LoadBalancerType
+          Value: 'application'
+        - Namespace: 'aws:elasticbeanstalk:environment:process:default'
+          OptionName: Protocol
           Value: HTTP
-        - Namespace: 'aws:elb:listener:80'
-          OptionName: InstancePort
-          Value: '80'
         # Application environment options
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: ENV
@@ -240,17 +143,10 @@ Resources:
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: bridge.user
           Value: !Ref BridgeUser
-  AWSEBApplication:
-    Type: 'AWS::ElasticBeanstalk::Application'
-    Properties:
-      ApplicationName: !Join
-        - '-'
-        - - !Ref 'AWS::StackName'
-          - application
   AWSEBEnvironment:
     Type: 'AWS::ElasticBeanstalk::Environment'
     Properties:
-      ApplicationName: !Ref AWSEBApplication
+      ApplicationName: !ImportValue us-east-1-bridgeserver2-common-BeanstalkAppName
       TemplateName: !Ref AWSEBConfigurationTemplate
       EnvironmentName: !Join
         - '-'
@@ -335,8 +231,8 @@ Resources:
         - 'arn:aws:iam::aws:policy/AmazonSNSFullAccess'
         - 'arn:aws:iam::aws:policy/AmazonSESFullAccess'
         - 'arn:aws:iam::aws:policy/AmazonRDSFullAccess'
-        - !Ref IAMBridgeServerECManagedPolicy
-        - !Ref IAMBridgeServerSQSManagedPolicy
+        - !Ref IAMBridgeServer2ECManagedPolicy
+        - !Ref IAMBridgeServer2SQSManagedPolicy
   AWSIAMInstanceProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
@@ -654,57 +550,7 @@ Resources:
       Period: 300
       Statistic: Average
       Threshold: 1
-  AWSLBSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupDescription: Load Balancer Security Group
-      VpcId: !Ref AwsDefaultVpcId
-      SecurityGroupIngress:
-        - CidrIp: 0.0.0.0/0
-          FromPort: '443'
-          ToPort: '443'
-          IpProtocol: tcp
-        - CidrIp: 0.0.0.0/0
-          FromPort: '80'
-          ToPort: '80'
-          IpProtocol: tcp
-      SecurityGroupEgress:
-        - CidrIp: 0.0.0.0/0
-          FromPort: '80'
-          ToPort: '80'
-          IpProtocol: tcp
-  AWSEC2SecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    DependsOn: AWSLBSecurityGroup
-    Properties:
-      GroupName: !Join
-        - '-'
-        - - !Ref 'AWS::StackName'
-          - AWSEC2SecurityGroup
-      GroupDescription: EC2 Security Group
-      VpcId: !Ref AwsDefaultVpcId
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: '80'
-          ToPort: '80'
-          SourceSecurityGroupId: !Ref AWSLBSecurityGroup
-  # Tests running on travis requires direct access to RDS (should only apply to Dev RDS instance)
-  # https://docs.travis-ci.com/user/ip-addresses/
-  AWSEC2RdsOpenSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    DependsOn: AWSEC2SecurityGroup
-    Properties:
-      GroupDescription: !Join
-        - '-'
-        - - !Ref 'AWS::StackName'
-          - AWSEC2RdsOpenSecurityGroup
-      VpcId: !Ref AwsDefaultVpcId
-      SecurityGroupIngress:
-        - CidrIp: '0.0.0.0/0'
-          FromPort: '3306'
-          ToPort: '3306'
-          IpProtocol: tcp
-  IAMBridgeServerECManagedPolicy:
+  IAMBridgeServer2ECManagedPolicy:
     Type: 'AWS::IAM::ManagedPolicy'
     Description: Provide full access to ElastiCache except for delete
     Properties:
@@ -724,9 +570,9 @@ Resources:
             Action:
               - elasticache:*
             Resource: "*"
-  IAMBridgeServerSQSManagedPolicy:
+  IAMBridgeServer2SQSManagedPolicy:
     Type: 'AWS::IAM::ManagedPolicy'
-    Description: Provide full access to SQA except for create
+    Description: Provide full access to SQS except for create
     Properties:
         PolicyDocument:
           Version: '2012-10-17'
@@ -744,16 +590,16 @@ Resources:
   # 1. Detach or remove the following user resources: login profile, attached
   #    MFA device, access-keys, ssh-keys, and policies.
   # 2. Detach the user from all groups.
-  AWSIAMBridgeServerServiceUserAccessKey:
+  AWSIAMBridgeServer2ServiceUserAccessKey:
     Type: 'AWS::IAM::AccessKey'
     Properties:
-      UserName: !Ref AWSIAMBridgeServerServiceUser
-  AWSIAMBridgeServerServiceUser:
+      UserName: !Ref AWSIAMBridgeServer2ServiceUser
+  AWSIAMBridgeServer2ServiceUser:
     Type: 'AWS::IAM::User'
     Properties:
       Groups:
-        - !Ref AWSIAMBridgeServerServiceUserGroup
-  AWSIAMBridgeServerServiceUserGroup:
+        - !Ref AWSIAMBridgeServer2ServiceUserGroup
+  AWSIAMBridgeServer2ServiceUserGroup:
     Type: 'AWS::IAM::Group'
     Properties:
       ManagedPolicyArns:
@@ -762,22 +608,22 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonSNSFullAccess
         - arn:aws:iam::aws:policy/AmazonSESFullAccess
         - arn:aws:iam::aws:policy/AmazonRDSFullAccess
-        - !Ref IAMBridgeServerECManagedPolicy
-        - !Ref IAMBridgeServerSQSManagedPolicy
+        - !Ref IAMBridgeServer2ECManagedPolicy
+        - !Ref IAMBridgeServer2SQSManagedPolicy
   # special service user for developer testing
-  AWSIAMBridgeServerLocalServiceUserAccessKey:
+  AWSIAMBridgeServer2LocalServiceUserAccessKey:
     Type: 'AWS::IAM::AccessKey'
     Condition: CreateDevResources
     Properties:
-      UserName: !Ref AWSIAMBridgeServerLocalServiceUser
-  AWSIAMBridgeServerLocalServiceUser:
+      UserName: !Ref AWSIAMBridgeServer2LocalServiceUser
+  AWSIAMBridgeServer2LocalServiceUser:
     Type: 'AWS::IAM::User'
     Condition: CreateDevResources
     Properties:
       Groups:
-        - !Ref AWSIAMBridgeServerServiceUserGroup
-        - !Ref AWSIAMBridgeServerLocalServiceUserGroup
-  AWSIAMBridgeServerLocalServiceUserGroup:
+        - !Ref AWSIAMBridgeServer2ServiceUserGroup
+        - !Ref AWSIAMBridgeServer2LocalServiceUserGroup
+  AWSIAMBridgeServer2LocalServiceUserGroup:
     Type: 'AWS::IAM::Group'
     Condition: CreateDevResources
     Properties:
@@ -797,10 +643,6 @@ Outputs:
     Value: !Ref AWSS3AppDeployBucket
     Export:
       Name: !Sub '${AWS::StackName}-AppDeployBucket'
-  AWSEBApplication:
-    Value: !Ref AWSEBApplication
-    Export:
-      Name: !Sub '${AWS::StackName}-Application'
   AWSEBEnvironment:
     Value: !Ref AWSEBEnvironment
     Export:
@@ -814,21 +656,21 @@ Outputs:
           - EndpointURL
     Export:
       Name: !Sub '${AWS::StackName}-EnvironmentUrl'
-  AWSIAMBridgeServerServiceUserAccessKey:
-    Value: !Ref AWSIAMBridgeServerServiceUserAccessKey
+  AWSIAMBridgeServer2ServiceUserAccessKey:
+    Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
     Export:
-      Name: !Sub '${AWS::StackName}-BridgeServerServiceUserAccessKey'
-  AWSIAMBridgeServerServiceUserSecretAccessKey:
-    Value: !GetAtt AWSIAMBridgeServerServiceUserAccessKey.SecretAccessKey
+      Name: !Sub '${AWS::StackName}-BridgeServer2ServiceUserAccessKey'
+  AWSIAMBridgeServer2ServiceUserSecretAccessKey:
+    Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
     Export:
-      Name: !Sub '${AWS::StackName}-BridgeServerServiceUserSecretAccessKey'
-  AWSIAMBridgeServerLocalServiceUserAccessKey:
+      Name: !Sub '${AWS::StackName}-BridgeServer2ServiceUserSecretAccessKey'
+  AWSIAMBridgeServer2LocalServiceUserAccessKey:
     Condition: CreateDevResources
-    Value: !Ref AWSIAMBridgeServerLocalServiceUserAccessKey
+    Value: !Ref AWSIAMBridgeServer2LocalServiceUserAccessKey
     Export:
-      Name: !Sub '${AWS::StackName}-BridgeServerLocalServiceUserAccessKey'
-  AWSIAMBridgeServerLocalServiceUserSecretAccessKey:
+      Name: !Sub '${AWS::StackName}-BridgeServer2LocalServiceUserAccessKey'
+  AWSIAMBridgeServer2LocalServiceUserSecretAccessKey:
     Condition: CreateDevResources
-    Value: !GetAtt AWSIAMBridgeServerLocalServiceUserAccessKey.SecretAccessKey
+    Value: !GetAtt AWSIAMBridgeServer2LocalServiceUserAccessKey.SecretAccessKey
     Export:
-      Name: !Sub '${AWS::StackName}-BridgeServerLocalServiceUserSecretAccessKey'
+      Name: !Sub '${AWS::StackName}-BridgeServer2LocalServiceUserSecretAccessKey'

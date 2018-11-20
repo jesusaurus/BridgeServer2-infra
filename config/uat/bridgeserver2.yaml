@@ -1,10 +1,10 @@
 template_path: templates/bridgeserver2.yaml
 stack_name: bridgeserver2-uat
 parameters:
-  AppHealthcheckUrl: 'HTTP:80/?study=api'
+  AppHealthcheckUrl: '/'
   AwsAutoScalingMaxSize: '1'
   AwsAutoScalingMinSize: '1'
-  AwsDefaultVpcId: vpc-9c70bbf9
+  AwsDefaultVpcId: vpc-0818659c21d92f2a3
   AwsEbHealthReportingSystem: enhanced
   AwsSnsBounceNotificationEndpoint: bridgepf-uat-bounce-notifications@sagebase.org
   AwsSnsNotificationEndpoint: bridgepf-uat@sagebase.org

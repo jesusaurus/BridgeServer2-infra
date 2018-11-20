@@ -15,4 +15,5 @@ install:
 - ./setup_sceptre.sh || travis_terminate 1
 script:
 - ./validate-templates.sh || travis_terminate 1
-- travis_wait 45 sceptre --var "profile=default" --var "region=us-east-1" launch-env $TRAVIS_BRANCH
+- sceptre --var "profile=default" --var "region=us-east-1" launch-env common
+- sceptre --var "profile=default" --var "region=us-east-1" launch-env $TRAVIS_BRANCH
