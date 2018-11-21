@@ -71,6 +71,27 @@ Parameters:
 Conditions:
   CreateDevResources: !Equals [ !Ref BridgeEnv, dev ]
 Resources:
+  LoadBalancerAccessLogsBucket:
+    Type: 'AWS::S3::Bucket'
+  LoadBalancerAccessLogsBucketPolicy:
+    Type: "AWS::S3::BucketPolicy"
+    Properties:
+      Bucket: !Ref LoadBalancerAccessLogsBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: ModAccess
+            Action:
+              - 's3:PutObject'
+            Effect: Allow
+            Resource:
+              - !Join
+                - ''
+                - - !GetAtt LoadBalancerAccessLogsBucket.Arn
+                  - '/*'
+            Principal:
+              AWS:
+                - 127311923021
   AWSEBConfigurationTemplate:
     Type: 'AWS::ElasticBeanstalk::ConfigurationTemplate'
     Properties:
@@ -132,6 +153,12 @@ Resources:
         - Namespace: 'aws:elasticbeanstalk:environment'
           OptionName: LoadBalancerType
           Value: 'application'
+        - Namespace: 'aws:elbv2:loadbalancer'
+          OptionName: AccessLogsS3Bucket
+          Value: !Ref LoadBalancerAccessLogsBucket
+        - Namespace: 'aws:elbv2:loadbalancer'
+          OptionName: AccessLogsS3Enabled
+          Value: 'true'
         # Application environment options
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: APP_DEPLOY_BUCKET
