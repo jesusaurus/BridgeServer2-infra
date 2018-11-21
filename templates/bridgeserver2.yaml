@@ -1,6 +1,8 @@
 Description: Resources for BridgeServer2 Application
 AWSTemplateFormatVersion: 2010-09-09
 Parameters:
+  AppDeployBucket:
+    Type: String
   AppHealthcheckUrl:
     Type: String
     Description: The AWS EB health check path
@@ -10,7 +12,7 @@ Parameters:
   AwsAutoScalingMinSize:
     Type: String
     Default: '1'
-  AwsDefaultVpcId:
+  AwsVpcId:
     Type: "AWS::EC2::VPC::Id"
     Description: The AWS account's default VPC id
   AwsEbHealthReportingSystem:
@@ -93,7 +95,7 @@ Resources:
           Value: true
         - Namespace: 'aws:autoscaling:updatepolicy:rollingupdate'
           OptionName: RollingUpdateType
-          Value: 'Immutable'
+          Value: 'Time'
         - Namespace: 'aws:elasticbeanstalk:application'
           OptionName: Application Healthcheck URL
           Value: !Ref AppHealthcheckUrl
@@ -108,7 +110,7 @@ Resources:
           Value: '90'
         - Namespace: 'aws:elasticbeanstalk:command'
           OptionName: DeploymentPolicy
-          Value: 'Immutable'
+          Value: 'Rolling'
         - Namespace: 'aws:elasticbeanstalk:environment'
           OptionName: ServiceRole
           Value: !Ref AWSIAMServiceRole
@@ -130,10 +132,10 @@ Resources:
         - Namespace: 'aws:elasticbeanstalk:environment'
           OptionName: LoadBalancerType
           Value: 'application'
-        - Namespace: 'aws:elasticbeanstalk:environment:process:default'
-          OptionName: Protocol
-          Value: HTTP
         # Application environment options
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: APP_DEPLOY_BUCKET
+          Value: !Ref AppDeployBucket
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: ENV
           Value: !Ref Env
@@ -156,6 +158,8 @@ Resources:
         Type: Standard
   AWSS3AppDeployBucket:
     Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref AppDeployBucket
   AWSR53RecordSet:
     Type: 'AWS::Route53::RecordSet'
     Properties:

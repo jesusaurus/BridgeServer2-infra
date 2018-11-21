@@ -1,10 +1,11 @@
 template_path: templates/bridgeserver2.yaml
 stack_name: bridgeserver2-prod
 parameters:
+  AppDeployBucket: org-sagebridge-bridgeserver2-deployment-prod
   AppHealthcheckUrl: '/'
   AwsAutoScalingMaxSize: "3"
   AwsAutoScalingMinSize: "3"
-  AwsDefaultVpcId: vpc-0818659c21d92f2a3
+  AwsVpcId: vpc-0818659c21d92f2a3
   AwsEbHealthReportingSystem: enhanced
   AwsSnsBounceNotificationEndpoint: bridge-bounce-notifications@sagebase.org
   AwsSnsNotificationEndpoint: bridgeops@sagebase.org
