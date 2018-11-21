@@ -3,13 +3,15 @@ Install and configure the AWS Infrastructure for the BridgeServer 2.0 applicatio
 
 
 ## Initialize a new stack
-1. Deploy the infrastructure to AWS. Run `sceptre launch-stack develop bridgeserver2`
+1. Create common infrastructure. Run `sceptre launch-env common`
 
-The above should create the infrastructure required for BridgeServer2, it does not actually deploy the app it only installs and configures the required AWS infrastructure for it. The AWS appilcation health check is enabled therefore the EB environment will start in an error state since the app has not been deployed. The environment status should turn green once the app is successfully deployed.
+2. Deploy the infrastructure to AWS. Run `sceptre launch-env develop`
 
-2. Check for additional bootstrapping steps in [BridgeServer2 repo](https://github.com/Sage-Bionetworks/BridgeServer2).
+The above will only install and configure the required AWS infrastructure. AWS automatically deploys a sample app. You will need to deploy the app as a separate step.
 
-3. Once the infrastructure for BridgeServer2 app has been setup you can deploy the app file to the stack.
+3. Check for additional bootstrapping steps in [BridgeServer2 repo](https://github.com/Sage-Bionetworks/BridgeServer2).
+
+4. Once the infrastructure for BridgeServer2 app has been setup you can deploy the app file to the stack.
 
 
 ## Continuous Integration
