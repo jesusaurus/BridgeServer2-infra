@@ -1,0 +1,12 @@
+Description: Common resources for all stacks of BridgeServer2 Application
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  BeanstalkApplication:
+    Type: 'AWS::ElasticBeanstalk::Application'
+    Properties:
+      ApplicationName: 'BridgeServer2-application'
+Outputs:
+  BeanstalkAppName:
+    Value: !Ref BeanstalkApplication
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-BeanstalkAppName'

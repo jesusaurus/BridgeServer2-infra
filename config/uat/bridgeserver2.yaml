@@ -1,0 +1,18 @@
+template_path: templates/bridgeserver2.yaml
+stack_name: bridgeserver2-uat
+parameters:
+  AppDeployBucket: org-sagebridge-bridgeserver2-deployment-uat
+  AppHealthcheckUrl: '/'
+  AwsAutoScalingMaxSize: '1'
+  AwsAutoScalingMinSize: '1'
+  AwsVpcId: vpc-0818659c21d92f2a3
+  AwsEbHealthReportingSystem: enhanced
+  AwsSnsBounceNotificationEndpoint: bridgepf-uat-bounce-notifications@sagebase.org
+  AwsSnsNotificationEndpoint: bridgepf-uat@sagebase.org
+  AwsSolutionStackName: '64bit Amazon Linux 2018.03 v3.0.1 running Tomcat 8 Java 8'
+  BridgeEnv: uat
+  BridgeUser: heroku
+  DNSHostname: bridgeserver2-uat
+  DNSDomain: sagebridge.org
+  EC2InstanceType: t2.small
+  Env: staging

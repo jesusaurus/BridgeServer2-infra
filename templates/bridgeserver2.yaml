@@ -1,0 +1,710 @@
+Description: Resources for BridgeServer2 Application
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  AppDeployBucket:
+    Type: String
+  AppHealthcheckUrl:
+    Type: String
+    Description: The AWS EB health check path
+  AwsAutoScalingMaxSize:
+    Type: String
+    Default: '1'
+  AwsAutoScalingMinSize:
+    Type: String
+    Default: '1'
+  AwsVpcId:
+    Type: "AWS::EC2::VPC::Id"
+    Description: The AWS account's default VPC id
+  AwsEbHealthReportingSystem:
+    Type: String
+    Default: basic
+    AllowedValues:
+      - basic
+      - enhanced
+    ConstraintDescription: must be either basic or enhanced
+  AwsSnsBounceNotificationEndpoint:
+    Type: String
+    Description: Email address for SNS bounce notifications
+  AwsSnsNotificationEndpoint:
+    Type: String
+    Description: Email address for AWS SNS notifications
+  AwsSolutionStackName:
+    Description: The AWS Solution Stack
+    Type: String
+  BridgeEnv:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - prod
+      - uat
+      - dev
+    ConstraintDescription: must specify dev, uat or prod.
+  BridgeUser:
+    Type: String
+    Default: heroku
+  DNSDomain:
+    Type: String
+    Description: DNS Domain name for deployment
+    Default: sagebridge.org
+  DNSHostname:
+    Type: String
+    Description: DNS Hostname for deployment
+  EC2InstanceType:
+    Type: String
+    Description: Instance type to use for Elastic Beanstalk Instances
+    Default: t2.small
+    AllowedValues:
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - t2.xlarge
+      - t2.2xlarge
+  Env:
+    Type: String
+    Default: develop
+    AllowedValues:
+      - prod
+      - staging
+      - develop
+Conditions:
+  CreateDevResources: !Equals [ !Ref BridgeEnv, dev ]
+Resources:
+  LoadBalancerAccessLogsBucket:
+    Type: 'AWS::S3::Bucket'
+  LoadBalancerAccessLogsBucketPolicy:
+    Type: "AWS::S3::BucketPolicy"
+    Properties:
+      Bucket: !Ref LoadBalancerAccessLogsBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: ModAccess
+            Action:
+              - 's3:PutObject'
+            Effect: Allow
+            Resource:
+              - !Join
+                - ''
+                - - !GetAtt LoadBalancerAccessLogsBucket.Arn
+                  - '/*'
+            Principal:
+              AWS:
+                - 127311923021
+  AWSEBConfigurationTemplate:
+    Type: 'AWS::ElasticBeanstalk::ConfigurationTemplate'
+    Properties:
+      ApplicationName: !ImportValue us-east-1-bridgeserver2-common-BeanstalkAppName
+      SolutionStackName: !Ref AwsSolutionStackName
+      OptionSettings:
+        # EB environment options
+        - Namespace: 'aws:autoscaling:asg'
+          OptionName: MaxSize
+          Value: !Ref AwsAutoScalingMaxSize
+        - Namespace: 'aws:autoscaling:asg'
+          OptionName: MinSize
+          Value: !Ref AwsAutoScalingMinSize
+        - Namespace: 'aws:autoscaling:launchconfiguration'
+          OptionName: IamInstanceProfile
+          Value: !Ref AWSIAMInstanceProfile
+        - Namespace: 'aws:autoscaling:launchconfiguration'
+          OptionName: InstanceType
+          Value: !Ref EC2InstanceType
+        - Namespace: 'aws:autoscaling:updatepolicy:rollingupdate'
+          OptionName: RollingUpdateEnabled
+          Value: true
+        - Namespace: 'aws:autoscaling:updatepolicy:rollingupdate'
+          OptionName: RollingUpdateType
+          Value: 'Time'
+        - Namespace: 'aws:elasticbeanstalk:application'
+          OptionName: Application Healthcheck URL
+          Value: !Ref AppHealthcheckUrl
+        - Namespace: 'aws:elasticbeanstalk:cloudwatch:logs'
+          OptionName: StreamLogs
+          Value: 'true'
+        - Namespace: 'aws:elasticbeanstalk:cloudwatch:logs'
+          OptionName: DeleteOnTerminate
+          Value: 'true'
+        - Namespace: 'aws:elasticbeanstalk:cloudwatch:logs'
+          OptionName: RetentionInDays
+          Value: '90'
+        - Namespace: 'aws:elasticbeanstalk:command'
+          OptionName: DeploymentPolicy
+          Value: 'Rolling'
+        - Namespace: 'aws:elasticbeanstalk:environment'
+          OptionName: ServiceRole
+          Value: !Ref AWSIAMServiceRole
+        - Namespace: 'aws:elasticbeanstalk:environment:process:default'
+          OptionName: Protocol
+          Value: 'HTTP'
+        - Namespace: 'aws:elasticbeanstalk:environment:process:default'
+          OptionName: HealthCheckPath
+          Value: !Ref AppHealthcheckUrl
+        - Namespace: 'aws:elasticbeanstalk:healthreporting:system'
+          OptionName: SystemType
+          Value: !Ref AwsEbHealthReportingSystem
+        - Namespace: 'aws:elasticbeanstalk:hostmanager'
+          OptionName: LogPublicationControl
+          Value: true
+        - Namespace: 'aws:elasticbeanstalk:xray'
+          OptionName: XRayEnabled
+          Value: false
+        - Namespace: 'aws:elasticbeanstalk:environment'
+          OptionName: LoadBalancerType
+          Value: 'application'
+        - Namespace: 'aws:elbv2:loadbalancer'
+          OptionName: AccessLogsS3Bucket
+          Value: !Ref LoadBalancerAccessLogsBucket
+        - Namespace: 'aws:elbv2:loadbalancer'
+          OptionName: AccessLogsS3Enabled
+          Value: 'true'
+        - Namespace: 'aws:elbv2:listener:default'
+          OptionName: Protocol
+          Value: HTTP
+        # Application environment options
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: APP_DEPLOY_BUCKET
+          Value: !Ref AppDeployBucket
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: ENV
+          Value: !Ref Env
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: bridge.env
+          Value: !Ref BridgeEnv
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: bridge.user
+          Value: !Ref BridgeUser
+  AWSEBEnvironment:
+    Type: 'AWS::ElasticBeanstalk::Environment'
+    Properties:
+      ApplicationName: !ImportValue us-east-1-bridgeserver2-common-BeanstalkAppName
+      TemplateName: !Ref AWSEBConfigurationTemplate
+      EnvironmentName: !Join
+        - '-'
+        - - !Ref 'AWS::StackName'
+      Tier:
+        Name: WebServer
+        Type: Standard
+  AWSS3AppDeployBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref AppDeployBucket
+  AWSR53RecordSet:
+    Type: 'AWS::Route53::RecordSet'
+    Properties:
+      HostedZoneName: !Join
+        - ''
+        - - !Ref DNSDomain
+          - .
+      Name: !Join
+        - ''
+        - - !Ref DNSHostname
+          - .
+          - !Ref DNSDomain
+          - .
+      Type: CNAME
+      TTL: '900'
+      ResourceRecords:
+        - !GetAtt
+          - AWSEBEnvironment
+          - EndpointURL
+  AWSR53HealthCheck:
+    Type: "AWS::Route53::HealthCheck"
+    DependsOn: AWSR53RecordSet
+    Properties:
+      HealthCheckConfig:
+        FullyQualifiedDomainName: !GetAtt AWSEBEnvironment.EndpointURL
+        Port: "80"
+        Type: "HTTP"
+        ResourcePath: "/"
+      HealthCheckTags:
+        -
+          Key: "Name"
+          Value: !Join
+            - '-'
+            - - !Ref 'AWS::StackName'
+              - AWSR53HealthCheck
+  AWSIAMServiceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - elasticbeanstalk.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+            Condition:
+              StringEquals:
+                sts:ExternalId: elasticbeanstalk
+      Path: /
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth'
+        - 'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkService'
+        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+  AWSIAMRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier'
+        - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonSNSFullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonSESFullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonRDSFullAccess'
+        - !Ref IAMBridgeServer2ECManagedPolicy
+        - !Ref IAMBridgeServer2SQSManagedPolicy
+  AWSIAMInstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Path: /
+      Roles:
+        - !Ref AWSIAMRole
+  AWSSNSBounceTopic:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      Subscription:
+        -
+          Endpoint: !Ref AwsSnsBounceNotificationEndpoint
+          Protocol: "email"
+  AWSSNSTopic:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      Subscription:
+        -
+          Endpoint: !Ref AwsSnsNotificationEndpoint
+          Protocol: "email"
+  AWSLogsLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Join
+        - '/'
+        - - /aws/elasticbeanstalk
+          - !Ref 'AWS::StackName'
+          - var/log/tomcat8/catalina.out
+      RetentionInDays: 90
+  AWSCWRequestErrorMetricFilter:
+    Type: "AWS::Logs::MetricFilter"
+    DependsOn: AWSLogsLogGroup
+    Properties:
+      LogGroupName: !Join
+        - '/'
+        - - /aws/elasticbeanstalk
+          - !Ref 'AWS::StackName'
+          - var/log/tomcat8/catalina.out
+      FilterPattern: 'ERROR'
+      MetricTransformations:
+        -
+          MetricValue: "1"
+          MetricNamespace: "LogMetrics/Errors"
+          MetricName: !Join
+            - '-'
+            - - !Ref 'AWS::StackName'
+              - ErrorCount
+  AWSCWRequestErrorAlarm:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref AWSSNSTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: !Join
+        - '-'
+        - - !Ref 'AWS::StackName'
+          - ErrorCount
+      Namespace: LogMetrics/Errors
+      Period: 3600
+      Statistic: Sum
+      Threshold: 10
+      TreatMissingData: notBreaching
+  AWSCWRequestWarningMetricFilter:
+    Type: "AWS::Logs::MetricFilter"
+    DependsOn: AWSLogsLogGroup
+    Properties:
+      LogGroupName: !Join
+        - '/'
+        - - /aws/elasticbeanstalk
+          - !Ref 'AWS::StackName'
+          - var/log/tomcat8/catalina.out
+      FilterPattern: 'WARN'
+      MetricTransformations:
+        -
+          MetricValue: "1"
+          MetricNamespace: "LogMetrics/Warnings"
+          MetricName: !Join
+            - '-'
+            - - !Ref 'AWS::StackName'
+              - WarningCount
+  AWSCWRequestWarningAlarm:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref AWSSNSTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: !Join
+        - '-'
+        - - !Ref 'AWS::StackName'
+          - WarningCount
+      Namespace: LogMetrics/Warnings
+      Period: 3600
+      Statistic: Sum
+      Threshold: 100
+      TreatMissingData: notBreaching
+  AWSCWThroughputExceptionMetricFilter:
+    Type: "AWS::Logs::MetricFilter"
+    DependsOn: AWSLogsLogGroup
+    Properties:
+      LogGroupName: !Join
+        - '/'
+        - - /aws/elasticbeanstalk
+          - !Ref 'AWS::StackName'
+          - var/log/tomcat8/catalina.out
+      FilterPattern: 'ProvisionedThroughputExceededException'
+      MetricTransformations:
+        -
+          MetricValue: "1"
+          MetricNamespace: "LogMetrics/Exceptions"
+          MetricName: !Join
+            - '-'
+            - - !Ref 'AWS::StackName'
+              - ThroughputExceededExceptionCount
+  AWSCWThroughputExceptionAlarm:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref AWSSNSTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: !Join
+        - '-'
+        - - !Ref 'AWS::StackName'
+          - ThroughputExceededExceptionCount
+      Namespace: LogMetrics/Exceptions
+      Period: 3600
+      Statistic: Sum
+      Threshold: 1
+      TreatMissingData: notBreaching
+  AWSCW400MetricFilter:
+    Type: "AWS::Logs::MetricFilter"
+    DependsOn: AWSLogsLogGroup
+    Properties:
+      LogGroupName: !Join
+        - '/'
+        - - /aws/elasticbeanstalk
+          - !Ref 'AWS::StackName'
+          - var/log/tomcat8/catalina.out
+      FilterPattern: '{ $.status = 400 }'
+      MetricTransformations:
+        -
+          MetricValue: "1"
+          MetricNamespace: "LogMetrics/400s"
+          MetricName: !Join
+            - '-'
+            - - !Ref 'AWS::StackName'
+              - 400Count
+  AWSCW400Alarm:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref AWSSNSTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: !Join
+        - '-'
+        - - !Ref 'AWS::StackName'
+          - 400Count
+      Namespace: LogMetrics/400s
+      Period: 3600
+      Statistic: Sum
+      Threshold: 30
+      TreatMissingData: notBreaching
+  AWSCW403MetricFilter:
+    Type: "AWS::Logs::MetricFilter"
+    DependsOn: AWSLogsLogGroup
+    Properties:
+      LogGroupName: !Join
+        - '/'
+        - - /aws/elasticbeanstalk
+          - !Ref 'AWS::StackName'
+          - var/log/tomcat8/catalina.out
+      FilterPattern: '{ $.status = 403 }'
+      MetricTransformations:
+        -
+          MetricValue: "1"
+          MetricNamespace: "LogMetrics/403s"
+          MetricName: !Join
+            - '-'
+            - - !Ref 'AWS::StackName'
+              - 403Count
+  AWSCW403Alarm:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref AWSSNSTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: !Join
+        - '-'
+        - - !Ref 'AWS::StackName'
+          - 403Count
+      Namespace: LogMetrics/403s
+      Period: 3600
+      Statistic: Sum
+      Threshold: 10
+      TreatMissingData: notBreaching
+  AWSCW409MetricFilter:
+    Type: "AWS::Logs::MetricFilter"
+    DependsOn: AWSLogsLogGroup
+    Properties:
+      LogGroupName: !Join
+        - '/'
+        - - /aws/elasticbeanstalk
+          - !Ref 'AWS::StackName'
+          - var/log/tomcat8/catalina.out
+      FilterPattern: '{ $.status = 409 }'
+      MetricTransformations:
+        -
+          MetricValue: "1"
+          MetricNamespace: "LogMetrics/409s"
+          MetricName: !Join
+            - '-'
+            - - !Ref 'AWS::StackName'
+              - 409Count
+  AWSCW409Alarm:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref AWSSNSTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: !Join
+        - '-'
+        - - !Ref 'AWS::StackName'
+          - 409Count
+      Namespace: LogMetrics/409s
+      Period: 3600
+      Statistic: Sum
+      Threshold: 15
+      TreatMissingData: notBreaching
+  AWSCW412MetricFilter:
+    Type: "AWS::Logs::MetricFilter"
+    DependsOn: AWSLogsLogGroup
+    Properties:
+      LogGroupName: !Join
+        - '/'
+        - - /aws/elasticbeanstalk
+          - !Ref 'AWS::StackName'
+          - var/log/tomcat8/catalina.out
+      FilterPattern: '{( $.status = 412 ) && ( $.uri != "*/signIn*" ) && ( $.uri != "*/verifyEmail*" ) }'
+      MetricTransformations:
+        -
+          MetricValue: "1"
+          MetricNamespace: "LogMetrics/412s"
+          MetricName: !Join
+            - '-'
+            - - !Ref 'AWS::StackName'
+              - 412Count
+  AWSCW412Alarm:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref AWSSNSTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: !Join
+        - '-'
+        - - !Ref 'AWS::StackName'
+          - 412Count
+      Namespace: LogMetrics/412s
+      Period: 3600
+      Statistic: Sum
+      Threshold: 30
+      TreatMissingData: notBreaching
+  AWSCWCpuUtilizationAlarm:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref AWSSNSTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Period: 900
+      Statistic: Average
+      Threshold: 80
+  AWSCWEnvironmentHealthAlarm:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref AWSSNSTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: EnvironmentHealth
+      Namespace: AWS/ElasticBeanstalk
+      Period: 900
+      Statistic: Maximum
+      Threshold: 25
+  AWSCWHealthCheckStatusAlarm:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref AWSSNSTopic
+      ComparisonOperator: LessThanThreshold
+      EvaluationPeriods: 1
+      MetricName: HealthCheckStatus
+      Namespace: AWS/Route53
+      Dimensions:
+        -
+          "Name": "HealthCheckId"
+          "Value": !Ref AWSR53HealthCheck
+      Period: 300
+      Statistic: Average
+      Threshold: 1
+  IAMBridgeServer2ECManagedPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Description: Provide full access to ElastiCache except for delete
+    Properties:
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Deny
+            Action:
+              - elasticache:DeleteCacheCluster
+              - elasticache:DeleteCacheParameterGroup
+              - elasticache:DeleteCacheSecurityGroup
+              - elasticache:DeleteCacheSubnetGroup
+              - elasticache:DeleteReplicationGroup
+              - elasticache:DeleteSnapshot
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - elasticache:*
+            Resource: "*"
+  IAMBridgeServer2SQSManagedPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Description: Provide full access to SQS except for create
+    Properties:
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Deny
+            Action:
+              - sqs:CreateQueue
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - sqs:*
+            Resource: "*"
+  # !! IMPORTANT !! - AWS API will refuse to remove users that have attached resources.
+  # Therefore you must do the following before deleting them from this file:
+  # 1. Detach or remove the following user resources: login profile, attached
+  #    MFA device, access-keys, ssh-keys, and policies.
+  # 2. Detach the user from all groups.
+  AWSIAMBridgeServer2ServiceUserAccessKey:
+    Type: 'AWS::IAM::AccessKey'
+    Properties:
+      UserName: !Ref AWSIAMBridgeServer2ServiceUser
+  AWSIAMBridgeServer2ServiceUser:
+    Type: 'AWS::IAM::User'
+    Properties:
+      Groups:
+        - !Ref AWSIAMBridgeServer2ServiceUserGroup
+  AWSIAMBridgeServer2ServiceUserGroup:
+    Type: 'AWS::IAM::Group'
+    Properties:
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+        - arn:aws:iam::aws:policy/AmazonSNSFullAccess
+        - arn:aws:iam::aws:policy/AmazonSESFullAccess
+        - arn:aws:iam::aws:policy/AmazonRDSFullAccess
+        - !Ref IAMBridgeServer2ECManagedPolicy
+        - !Ref IAMBridgeServer2SQSManagedPolicy
+  # special service user for developer testing
+  AWSIAMBridgeServer2LocalServiceUserAccessKey:
+    Type: 'AWS::IAM::AccessKey'
+    Condition: CreateDevResources
+    Properties:
+      UserName: !Ref AWSIAMBridgeServer2LocalServiceUser
+  AWSIAMBridgeServer2LocalServiceUser:
+    Type: 'AWS::IAM::User'
+    Condition: CreateDevResources
+    Properties:
+      Groups:
+        - !Ref AWSIAMBridgeServer2ServiceUserGroup
+        - !Ref AWSIAMBridgeServer2LocalServiceUserGroup
+  AWSIAMBridgeServer2LocalServiceUserGroup:
+    Type: 'AWS::IAM::Group'
+    Condition: CreateDevResources
+    Properties:
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+Outputs:
+  AppPublicEndpoint:
+    Value: !Join
+      - ''
+      - - 'https://'
+        - !Ref DNSHostname
+        - .
+        - !Ref DNSDomain
+    Export:
+      Name: !Sub '${AWS::StackName}-AppPublicEndpoint'
+  AWSS3AppDeployBucket:
+    Value: !Ref AWSS3AppDeployBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-AppDeployBucket'
+  AWSEBEnvironment:
+    Value: !Ref AWSEBEnvironment
+    Export:
+      Name: !Sub '${AWS::StackName}-Environment'
+  AWSEBEnvironmentUrl:
+    Value: !Join
+      - ''
+      - - 'http://'
+        - !GetAtt
+          - AWSEBEnvironment
+          - EndpointURL
+    Export:
+      Name: !Sub '${AWS::StackName}-EnvironmentUrl'
+  AWSIAMBridgeServer2ServiceUserAccessKey:
+    Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
+    Export:
+      Name: !Sub '${AWS::StackName}-BridgeServer2ServiceUserAccessKey'
+  AWSIAMBridgeServer2ServiceUserSecretAccessKey:
+    Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
+    Export:
+      Name: !Sub '${AWS::StackName}-BridgeServer2ServiceUserSecretAccessKey'
+  AWSIAMBridgeServer2LocalServiceUserAccessKey:
+    Condition: CreateDevResources
+    Value: !Ref AWSIAMBridgeServer2LocalServiceUserAccessKey
+    Export:
+      Name: !Sub '${AWS::StackName}-BridgeServer2LocalServiceUserAccessKey'
+  AWSIAMBridgeServer2LocalServiceUserSecretAccessKey:
+    Condition: CreateDevResources
+    Value: !GetAtt AWSIAMBridgeServer2LocalServiceUserAccessKey.SecretAccessKey
+    Export:
+      Name: !Sub '${AWS::StackName}-BridgeServer2LocalServiceUserSecretAccessKey'
