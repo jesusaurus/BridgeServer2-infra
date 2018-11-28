@@ -159,6 +159,9 @@ Resources:
         - Namespace: 'aws:elbv2:loadbalancer'
           OptionName: AccessLogsS3Enabled
           Value: 'true'
+        - Namespace: 'aws:elbv2:listener:default'
+          OptionName: Protocol
+          Value: HTTP
         # Application environment options
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: APP_DEPLOY_BUCKET
