@@ -65,7 +65,7 @@ Parameters:
     Type: String
     Default: develop
     AllowedValues:
-      - prod
+      - production
       - staging
       - develop
 Conditions:
