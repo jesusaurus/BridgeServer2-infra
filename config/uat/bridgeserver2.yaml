@@ -3,9 +3,13 @@ stack_name: bridgeserver2-uat
 parameters:
   AppDeployBucket: org-sagebridge-bridgeserver2-deployment-uat
   AppHealthcheckUrl: '/'
+  AwsAutoScalingGroupName: awseb-e-vtmgr5mmuw-stack-AWSEBAutoScalingGroup-ITFFRGB3YV09
   AwsAutoScalingMaxSize: '1'
   AwsAutoScalingMinSize: '1'
+  AwsLoadBalancerName: awseb-AWSEB-PGXF0C630NX4
   AwsVpcId: vpc-0818659c21d92f2a3
+  AwsVpcPrivateSubnets: subnet-0226fb44adc9329c8,subnet-08ac09086998c158d,subnet-03cdb08e9a667af48
+  AwsVpcPublicSubnets: subnet-00035aecc853eee0a,subnet-02e52b9bfc86ca70f,subnet-0c5a8cd4e7e1856c0
   AwsEbHealthReportingSystem: enhanced
   AwsSnsBounceNotificationEndpoint: bridgepf-uat-bounce-notifications@sagebase.org
   AwsSnsNotificationEndpoint: bridgepf-uat@sagebase.org
