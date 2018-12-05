@@ -1,0 +1,81 @@
+Description: KMS Integration for BridgeServer2 Application
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  ParentStack:
+    Type: String
+    Description: Name of the stack that creates the BridgeServer2 application (Elastic Beanstalk etc)
+Resources:
+  # KMS Keys
+  AWSKmsKey:
+    Type: "AWS::KMS::Key"
+    Properties:
+      Description: !Join
+        - '-'
+        - - !Ref AWS::StackName
+          - "KmsKey"
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Sid: "Allow administration of the key"
+            Effect: "Allow"
+            Principal:
+              AWS:
+                - !Join
+                  - ''
+                  - - 'arn:aws:iam::'
+                    - !Ref AWS::AccountId
+                    - ':root'
+                - !ImportValue us-east-1-bootstrap-CfServiceRoleArn
+            Action:
+              - "kms:Create*"
+              - "kms:Describe*"
+              - "kms:Enable*"
+              - "kms:List*"
+              - "kms:Put*"
+              - "kms:Update*"
+              - "kms:Revoke*"
+              - "kms:Disable*"
+              - "kms:Get*"
+              - "kms:Delete*"
+              - "kms:ScheduleKeyDeletion"
+              - "kms:CancelKeyDeletion"
+            Resource: "*"
+          -
+            Sid: "Allow use of the key"
+            Effect: "Allow"
+            Principal:
+              AWS:
+                - !Join
+                  - ''
+                  - - 'arn:aws:iam::'
+                    - !Ref AWS::AccountId
+                    - ':root'
+                - !ImportValue us-east-1-bootstrap-CfServiceRoleArn
+                - Fn::ImportValue: !Sub '${ParentStack}-BridgeServer2ServiceUserArn'
+                - Fn::ImportValue: !Sub '${ParentStack}-ServiceRoleArn'
+            Action:
+              - "kms:Encrypt"
+              - "kms:Decrypt"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:DescribeKey"
+            Resource: "*"
+  AWSKmsKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Join
+        - ''
+        - - 'alias/'
+          - !Ref AWS::StackName
+          - '/KmsKey'
+      TargetKeyId: !Ref AWSKmsKey
+Outputs:
+  AWSKmsKey:
+    Value: !Ref AWSKmsKey
+    Export:
+      Name: !Sub '${AWS::StackName}-KmsKey'
+  AWSKmsKeyAlias:
+    Value: !Ref AWSKmsKeyAlias
+    Export:
+      Name: !Sub '${AWS::StackName}-KmsKeyAlias'

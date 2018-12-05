@@ -1,0 +1,4 @@
+template_path: templates/bridgeserver2-kms.yaml
+stack_name: bridgeserver2-kms-develop
+parameters:
+  ParentStack: bridgeserver2-develop
