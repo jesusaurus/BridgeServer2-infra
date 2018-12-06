@@ -1,4 +1,4 @@
-Description: Resources for BridgeServer2 Application
+Description: Dashboard for BridgeServer2 Application
 AWSTemplateFormatVersion: 2010-09-09
 Parameters:
   AwsAutoScalingGroupName:
@@ -107,3 +107,8 @@ Resources:
           - >-
             "view": "timeSeries", "stacked": true, "period":300, "stat":"Sum",
             "region":"us-east-1", "title":"ClientErrors"}}]}
+Outputs:
+  AWSCWDashboard:
+    Value: !Ref AWSCWDashboard
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-AWSCWDashboard'

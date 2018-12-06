@@ -12,15 +12,6 @@ Parameters:
   AwsAutoScalingMinSize:
     Type: String
     Default: '1'
-  AwsVpcId:
-    Type: "AWS::EC2::VPC::Id"
-    Description: The AWS account's default VPC id
-  AwsVpcPrivateSubnets:
-    Type: String
-    Description: List of VPC subnet IDs (i.e. subnet-1e58fe09, subnet-fb88fe11, ..)
-  AwsVpcPublicSubnets:
-    Type: String
-    Description: List of VPC subnet IDs (i.e. subnet-1e58fe09, subnet-fb88fe11, ..)
   AwsEbHealthReportingSystem:
     Type: String
     Default: basic
@@ -98,43 +89,8 @@ Resources:
             Principal:
               AWS:
                 - 127311923021
-  AWSLBSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupDescription: Load Balancer Security Group
-      VpcId: !Ref AwsVpcId
-      SecurityGroupIngress:
-        - CidrIp: 0.0.0.0/0
-          FromPort: '443'
-          ToPort: '443'
-          IpProtocol: tcp
-        - CidrIp: 0.0.0.0/0
-          FromPort: '80'
-          ToPort: '80'
-          IpProtocol: tcp
-      SecurityGroupEgress:
-        - CidrIp: 0.0.0.0/0
-          FromPort: '80'
-          ToPort: '80'
-          IpProtocol: tcp
-  AWSEC2SecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    DependsOn: AWSLBSecurityGroup
-    Properties:
-      GroupName: !Join
-        - '-'
-        - - !Ref 'AWS::StackName'
-          - AWSEC2SecurityGroup
-      GroupDescription: EC2 Security Group
-      VpcId: !Ref AwsVpcId
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: '80'
-          ToPort: '80'
-          SourceSecurityGroupId: !Ref AWSLBSecurityGroup
   AWSEBConfigurationTemplate:
     Type: 'AWS::ElasticBeanstalk::ConfigurationTemplate'
-    DependsOn: AWSEC2SecurityGroup
     Properties:
       ApplicationName: !ImportValue us-east-1-bridgeserver2-common-BeanstalkAppName
       SolutionStackName: !Ref AwsSolutionStackName
@@ -152,9 +108,6 @@ Resources:
         - Namespace: 'aws:autoscaling:launchconfiguration'
           OptionName: InstanceType
           Value: !Ref EC2InstanceType
-        - Namespace: 'aws:autoscaling:launchconfiguration'
-          OptionName: SecurityGroups
-          Value: !Ref AWSEC2SecurityGroup
         - Namespace: 'aws:autoscaling:updatepolicy:rollingupdate'
           OptionName: RollingUpdateEnabled
           Value: true
@@ -163,13 +116,21 @@ Resources:
           Value: 'Time'
         - Namespace: 'aws:ec2:vpc'
           OptionName: ELBSubnets
-          Value: !Ref AwsVpcPublicSubnets
+          Value: !Join
+            - ','
+            - - !ImportValue us-east-1-BridgeServer2-vpc-PublicSubnet
+              - !ImportValue us-east-1-BridgeServer2-vpc-PublicSubnet1
+              - !ImportValue us-east-1-BridgeServer2-vpc-PublicSubnet2
         - Namespace: 'aws:ec2:vpc'
           OptionName: Subnets
-          Value: !Ref AwsVpcPrivateSubnets
+          Value: !Join
+            - ','
+            - - !ImportValue us-east-1-BridgeServer2-vpc-PrivateSubnet
+              - !ImportValue us-east-1-BridgeServer2-vpc-PrivateSubnet1
+              - !ImportValue us-east-1-BridgeServer2-vpc-PrivateSubnet2
         - Namespace: 'aws:ec2:vpc'
           OptionName: VPCId
-          Value: !Ref AwsVpcId
+          Value: !ImportValue us-east-1-BridgeServer2-vpc-VPCId
         - Namespace: 'aws:elasticbeanstalk:application'
           OptionName: Application Healthcheck URL
           Value: !Ref AppHealthcheckUrl
@@ -790,23 +751,23 @@ Outputs:
         - .
         - !Ref DNSDomain
     Export:
-      Name: !Sub '${AWS::StackName}-AppPublicEndpoint'
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-AppPublicEndpoint'
   AWSKmsKey:
     Value: !Ref AWSKmsKey
     Export:
-      Name: !Sub '${AWS::StackName}-KmsKey'
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-KmsKey'
   AWSKmsKeyAlias:
     Value: !Ref AWSKmsKeyAlias
     Export:
-      Name: !Sub '${AWS::StackName}-KmsKeyAlias'
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-KmsKeyAlias'
   AWSS3AppDeployBucket:
     Value: !Ref AWSS3AppDeployBucket
     Export:
-      Name: !Sub '${AWS::StackName}-AppDeployBucket'
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-AppDeployBucket'
   AWSEBEnvironment:
     Value: !Ref AWSEBEnvironment
     Export:
-      Name: !Sub '${AWS::StackName}-Environment'
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-Environment'
   AWSEBEnvironmentUrl:
     Value: !Join
       - ''
@@ -815,22 +776,22 @@ Outputs:
           - AWSEBEnvironment
           - EndpointURL
     Export:
-      Name: !Sub '${AWS::StackName}-EnvironmentUrl'
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-EnvironmentUrl'
   AWSIAMBridgeServer2ServiceUserAccessKey:
     Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
     Export:
-      Name: !Sub '${AWS::StackName}-BridgeServer2ServiceUserAccessKey'
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-BridgeServer2ServiceUserAccessKey'
   AWSIAMBridgeServer2ServiceUserSecretAccessKey:
     Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
     Export:
-      Name: !Sub '${AWS::StackName}-BridgeServer2ServiceUserSecretAccessKey'
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-BridgeServer2ServiceUserSecretAccessKey'
   AWSIAMBridgeServer2LocalServiceUserAccessKey:
     Condition: CreateDevResources
     Value: !Ref AWSIAMBridgeServer2LocalServiceUserAccessKey
     Export:
-      Name: !Sub '${AWS::StackName}-BridgeServer2LocalServiceUserAccessKey'
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-BridgeServer2LocalServiceUserAccessKey'
   AWSIAMBridgeServer2LocalServiceUserSecretAccessKey:
     Condition: CreateDevResources
     Value: !GetAtt AWSIAMBridgeServer2LocalServiceUserAccessKey.SecretAccessKey
     Export:
-      Name: !Sub '${AWS::StackName}-BridgeServer2LocalServiceUserSecretAccessKey'
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-BridgeServer2LocalServiceUserSecretAccessKey'
