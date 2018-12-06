@@ -716,6 +716,71 @@ Resources:
     Properties:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonS3FullAccess
+  # KMS Keys
+  AWSKmsKey:
+    Type: "AWS::KMS::Key"
+    Properties:
+      Description: !Join
+        - '-'
+        - - !Ref AWS::StackName
+          - "KmsKey"
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Sid: "Allow administration of the key"
+            Effect: "Allow"
+            Principal:
+              AWS:
+                - !Join
+                  - ''
+                  - - 'arn:aws:iam::'
+                    - !Ref AWS::AccountId
+                    - ':root'
+                - !ImportValue us-east-1-bootstrap-CfServiceRoleArn
+            Action:
+              - "kms:Create*"
+              - "kms:Describe*"
+              - "kms:Enable*"
+              - "kms:List*"
+              - "kms:Put*"
+              - "kms:Update*"
+              - "kms:Revoke*"
+              - "kms:Disable*"
+              - "kms:Get*"
+              - "kms:Delete*"
+              - "kms:ScheduleKeyDeletion"
+              - "kms:CancelKeyDeletion"
+            Resource: "*"
+          -
+            Sid: "Allow use of the key"
+            Effect: "Allow"
+            Principal:
+              AWS:
+                - !Join
+                  - ''
+                  - - 'arn:aws:iam::'
+                    - !Ref AWS::AccountId
+                    - ':root'
+                - !ImportValue us-east-1-bootstrap-CfServiceRoleArn
+                - !GetAtt AWSIAMBridgeServer2ServiceUser.Arn
+                - !GetAtt AWSIAMServiceRole.Arn
+            Action:
+              - "kms:Encrypt"
+              - "kms:Decrypt"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:DescribeKey"
+            Resource: "*"
+  AWSKmsKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Join
+        - ''
+        - - 'alias/'
+          - !Ref AWS::StackName
+          - '/KmsKey'
+      TargetKeyId: !Ref AWSKmsKey
 Outputs:
   AppPublicEndpoint:
     Value: !Join
@@ -726,6 +791,14 @@ Outputs:
         - !Ref DNSDomain
     Export:
       Name: !Sub '${AWS::StackName}-AppPublicEndpoint'
+  AWSKmsKey:
+    Value: !Ref AWSKmsKey
+    Export:
+      Name: !Sub '${AWS::StackName}-KmsKey'
+  AWSKmsKeyAlias:
+    Value: !Ref AWSKmsKeyAlias
+    Export:
+      Name: !Sub '${AWS::StackName}-KmsKeyAlias'
   AWSS3AppDeployBucket:
     Value: !Ref AWSS3AppDeployBucket
     Export:
@@ -743,10 +816,6 @@ Outputs:
           - EndpointURL
     Export:
       Name: !Sub '${AWS::StackName}-EnvironmentUrl'
-  AWSIAMBridgeServer2ServiceUserArn:
-    Value: !GetAtt AWSIAMBridgeServer2ServiceUser.Arn
-    Export:
-      Name: !Sub '${AWS::StackName}-BridgeServer2ServiceUserArn'
   AWSIAMBridgeServer2ServiceUserAccessKey:
     Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
     Export:
@@ -765,7 +834,3 @@ Outputs:
     Value: !GetAtt AWSIAMBridgeServer2LocalServiceUserAccessKey.SecretAccessKey
     Export:
       Name: !Sub '${AWS::StackName}-BridgeServer2LocalServiceUserSecretAccessKey'
-  AWSIAMServiceRoleArn:
-    Value: !GetAtt AWSIAMServiceRole.Arn
-    Export:
-      Name: !Sub '${AWS::StackName}-ServiceRoleArn'
