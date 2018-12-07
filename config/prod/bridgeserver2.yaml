@@ -5,7 +5,6 @@ parameters:
   AppHealthcheckUrl: '/'
   AwsAutoScalingMaxSize: "3"
   AwsAutoScalingMinSize: "3"
-  AwsVpcId: vpc-0818659c21d92f2a3
   AwsEbHealthReportingSystem: enhanced
   AwsSnsBounceNotificationEndpoint: bridge-bounce-notifications@sagebase.org
   AwsSnsNotificationEndpoint: bridgeops@sagebase.org

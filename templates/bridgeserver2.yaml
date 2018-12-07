@@ -12,9 +12,6 @@ Parameters:
   AwsAutoScalingMinSize:
     Type: String
     Default: '1'
-  AwsVpcId:
-    Type: "AWS::EC2::VPC::Id"
-    Description: The AWS account's default VPC id
   AwsEbHealthReportingSystem:
     Type: String
     Default: basic
@@ -68,6 +65,21 @@ Parameters:
       - production
       - staging
       - develop
+  RollingUpdateType:
+    Type: String
+    Default: Time
+    AllowedValues:
+      - Time
+      - Health
+      - Immutable
+  RollingUpdateDeploymentPolicy:
+    Type: String
+    Default: Rolling
+    AllowedValues:
+      - AllAtOnce
+      - Rolling
+      - RollingWithAdditionalBatch
+      - Immutable
 Conditions:
   CreateDevResources: !Equals [ !Ref BridgeEnv, dev ]
 Resources:
@@ -116,7 +128,30 @@ Resources:
           Value: true
         - Namespace: 'aws:autoscaling:updatepolicy:rollingupdate'
           OptionName: RollingUpdateType
-          Value: 'Time'
+          Value: !Ref RollingUpdateType
+        - Namespace: 'aws:elasticbeanstalk:command'
+          OptionName: DeploymentPolicy
+          Value: !Ref RollingUpdateDeploymentPolicy
+        - Namespace: 'aws:ec2:vpc'
+          OptionName: ELBSubnets
+          Value: !Join
+            - ','
+            - - !ImportValue us-east-1-BridgeServer2-vpc-PublicSubnet
+              - !ImportValue us-east-1-BridgeServer2-vpc-PublicSubnet1
+              - !ImportValue us-east-1-BridgeServer2-vpc-PublicSubnet2
+        - Namespace: 'aws:ec2:vpc'
+          OptionName: Subnets
+          Value: !Join
+            - ','
+            - - !ImportValue us-east-1-BridgeServer2-vpc-PrivateSubnet
+              - !ImportValue us-east-1-BridgeServer2-vpc-PrivateSubnet1
+              - !ImportValue us-east-1-BridgeServer2-vpc-PrivateSubnet2
+        - Namespace: 'aws:ec2:vpc'
+          OptionName: VPCId
+          Value: !ImportValue us-east-1-BridgeServer2-vpc-VPCId
+        - Namespace: 'aws:ec2:vpc'
+          OptionName: AssociatePublicIpAddress
+          Value: 'false'
         - Namespace: 'aws:elasticbeanstalk:application'
           OptionName: Application Healthcheck URL
           Value: !Ref AppHealthcheckUrl
@@ -129,9 +164,6 @@ Resources:
         - Namespace: 'aws:elasticbeanstalk:cloudwatch:logs'
           OptionName: RetentionInDays
           Value: '90'
-        - Namespace: 'aws:elasticbeanstalk:command'
-          OptionName: DeploymentPolicy
-          Value: 'Rolling'
         - Namespace: 'aws:elasticbeanstalk:environment'
           OptionName: ServiceRole
           Value: !Ref AWSIAMServiceRole
@@ -163,9 +195,6 @@ Resources:
           OptionName: Protocol
           Value: HTTP
         # Application environment options
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: APP_DEPLOY_BUCKET
-          Value: !Ref AppDeployBucket
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: ENV
           Value: !Ref Env
@@ -663,6 +692,71 @@ Resources:
     Properties:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonS3FullAccess
+  # KMS Keys
+  AWSKmsKey:
+    Type: "AWS::KMS::Key"
+    Properties:
+      Description: !Join
+        - '-'
+        - - !Ref AWS::StackName
+          - "KmsKey"
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Sid: "Allow administration of the key"
+            Effect: "Allow"
+            Principal:
+              AWS:
+                - !Join
+                  - ''
+                  - - 'arn:aws:iam::'
+                    - !Ref AWS::AccountId
+                    - ':root'
+                - !ImportValue us-east-1-bootstrap-CfServiceRoleArn
+            Action:
+              - "kms:Create*"
+              - "kms:Describe*"
+              - "kms:Enable*"
+              - "kms:List*"
+              - "kms:Put*"
+              - "kms:Update*"
+              - "kms:Revoke*"
+              - "kms:Disable*"
+              - "kms:Get*"
+              - "kms:Delete*"
+              - "kms:ScheduleKeyDeletion"
+              - "kms:CancelKeyDeletion"
+            Resource: "*"
+          -
+            Sid: "Allow use of the key"
+            Effect: "Allow"
+            Principal:
+              AWS:
+                - !Join
+                  - ''
+                  - - 'arn:aws:iam::'
+                    - !Ref AWS::AccountId
+                    - ':root'
+                - !ImportValue us-east-1-bootstrap-CfServiceRoleArn
+                - !GetAtt AWSIAMBridgeServer2ServiceUser.Arn
+                - !GetAtt AWSIAMServiceRole.Arn
+            Action:
+              - "kms:Encrypt"
+              - "kms:Decrypt"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:DescribeKey"
+            Resource: "*"
+  AWSKmsKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Join
+        - ''
+        - - 'alias/'
+          - !Ref AWS::StackName
+          - '/KmsKey'
+      TargetKeyId: !Ref AWSKmsKey
 Outputs:
   AppPublicEndpoint:
     Value: !Join
@@ -672,15 +766,23 @@ Outputs:
         - .
         - !Ref DNSDomain
     Export:
-      Name: !Sub '${AWS::StackName}-AppPublicEndpoint'
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-AppPublicEndpoint'
+  AWSKmsKey:
+    Value: !Ref AWSKmsKey
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-KmsKey'
+  AWSKmsKeyAlias:
+    Value: !Ref AWSKmsKeyAlias
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-KmsKeyAlias'
   AWSS3AppDeployBucket:
     Value: !Ref AWSS3AppDeployBucket
     Export:
-      Name: !Sub '${AWS::StackName}-AppDeployBucket'
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-AppDeployBucket'
   AWSEBEnvironment:
     Value: !Ref AWSEBEnvironment
     Export:
-      Name: !Sub '${AWS::StackName}-Environment'
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-Environment'
   AWSEBEnvironmentUrl:
     Value: !Join
       - ''
@@ -689,22 +791,22 @@ Outputs:
           - AWSEBEnvironment
           - EndpointURL
     Export:
-      Name: !Sub '${AWS::StackName}-EnvironmentUrl'
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-EnvironmentUrl'
   AWSIAMBridgeServer2ServiceUserAccessKey:
     Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
     Export:
-      Name: !Sub '${AWS::StackName}-BridgeServer2ServiceUserAccessKey'
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-BridgeServer2ServiceUserAccessKey'
   AWSIAMBridgeServer2ServiceUserSecretAccessKey:
     Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
     Export:
-      Name: !Sub '${AWS::StackName}-BridgeServer2ServiceUserSecretAccessKey'
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-BridgeServer2ServiceUserSecretAccessKey'
   AWSIAMBridgeServer2LocalServiceUserAccessKey:
     Condition: CreateDevResources
     Value: !Ref AWSIAMBridgeServer2LocalServiceUserAccessKey
     Export:
-      Name: !Sub '${AWS::StackName}-BridgeServer2LocalServiceUserAccessKey'
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-BridgeServer2LocalServiceUserAccessKey'
   AWSIAMBridgeServer2LocalServiceUserSecretAccessKey:
     Condition: CreateDevResources
     Value: !GetAtt AWSIAMBridgeServer2LocalServiceUserAccessKey.SecretAccessKey
     Export:
-      Name: !Sub '${AWS::StackName}-BridgeServer2LocalServiceUserSecretAccessKey'
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-BridgeServer2LocalServiceUserSecretAccessKey'
