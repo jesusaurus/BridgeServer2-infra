@@ -65,6 +65,21 @@ Parameters:
       - prod
       - staging
       - develop
+  RollingUpdateType:
+    Type: String
+    Default: Time
+    AllowedValues:
+      - Time
+      - Health
+      - Immutable
+  RollingUpdateDeploymentPolicy:
+    Type: String
+    Default: Rolling
+    AllowedValues:
+      - AllAtOnce
+      - Rolling
+      - RollingWithAdditionalBatch
+      - Immutable
 Conditions:
   CreateDevResources: !Equals [ !Ref BridgeEnv, dev ]
 Resources:
@@ -113,7 +128,10 @@ Resources:
           Value: true
         - Namespace: 'aws:autoscaling:updatepolicy:rollingupdate'
           OptionName: RollingUpdateType
-          Value: 'Time'
+          Value: !Ref RollingUpdateType
+        - Namespace: 'aws:elasticbeanstalk:command'
+          OptionName: DeploymentPolicy
+          Value: !Ref RollingUpdateDeploymentPolicy
         - Namespace: 'aws:ec2:vpc'
           OptionName: ELBSubnets
           Value: !Join
@@ -131,6 +149,9 @@ Resources:
         - Namespace: 'aws:ec2:vpc'
           OptionName: VPCId
           Value: !ImportValue us-east-1-BridgeServer2-vpc-VPCId
+        - Namespace: 'aws:ec2:vpc'
+          OptionName: AssociatePublicIpAddress
+          Value: 'false'
         - Namespace: 'aws:elasticbeanstalk:application'
           OptionName: Application Healthcheck URL
           Value: !Ref AppHealthcheckUrl
@@ -143,9 +164,6 @@ Resources:
         - Namespace: 'aws:elasticbeanstalk:cloudwatch:logs'
           OptionName: RetentionInDays
           Value: '90'
-        - Namespace: 'aws:elasticbeanstalk:command'
-          OptionName: DeploymentPolicy
-          Value: 'Rolling'
         - Namespace: 'aws:elasticbeanstalk:environment'
           OptionName: ServiceRole
           Value: !Ref AWSIAMServiceRole
@@ -177,9 +195,6 @@ Resources:
           OptionName: Protocol
           Value: HTTP
         # Application environment options
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: APP_DEPLOY_BUCKET
-          Value: !Ref AppDeployBucket
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: ENV
           Value: !Ref Env
