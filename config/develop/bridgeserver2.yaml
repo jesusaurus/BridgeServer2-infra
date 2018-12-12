@@ -10,8 +10,12 @@ parameters:
   AwsSnsNotificationEndpoint: bridgepf-develop@sagebase.org
   AwsSolutionStackName: '64bit Amazon Linux 2018.03 v3.0.1 running Tomcat 8 Java 8'
   BridgeEnv: dev
+  BridgePFStackName: bridgepf-develop
   BridgeUser: heroku
   DNSHostname: bridgeserver2-develop
   DNSDomain: sagebridge.org
   EC2InstanceType: t2.small
   Env: develop
+  NewRelicAppName: bridgeserver2-develop
+  NewRelicLicenseKey: !ssm /infra/NewRelicLicenseKey
+  SSLCertArn: !ssm /bridgeserver2-develop/SSLCertArn
