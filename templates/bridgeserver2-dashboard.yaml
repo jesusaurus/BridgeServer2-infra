@@ -5,6 +5,8 @@ Parameters:
     Type: String
   AwsLoadBalancerName:
     Type: String
+  EnvironmentName:
+    Type: String
 Resources:
   AWSCWDashboard:
     Type: 'AWS::CloudWatch::Dashboard'
@@ -35,14 +37,11 @@ Resources:
             "region":"us-east-1", "title":"NetworkOut"}},
           - >-
             {"type":"metric", "x":0, "y":0, "width":12, "height":6,
-            "properties":{"metrics":[[ "AWS/ELB", "HTTPCode_Backend_4XX",
-            "LoadBalancerName","
+            "properties":{"metrics":[[ "AWS/ApplicationELB", "HTTPCode_Target_4XX_Count",
+            "LoadBalancer","app/
           - !Ref AwsLoadBalancerName
           - '", {"stat": "Sum"}],'
-          - '[ "AWS/ELB", "HTTPCode_Backend_5XX", "LoadBalancerName","'
-          - !Ref AwsLoadBalancerName
-          - '", {"stat": "Sum"}],'
-          - '[ "AWS/ELB", "BackendConnectionErrors", "LoadBalancerName","'
+          - '[ "AWS/ApplicationELB", "HTTPCode_Target_5XX_Count", "LoadBalancer","app/'
           - !Ref AwsLoadBalancerName
           - '", {"stat": "Sum"}]],'
           - >-
@@ -50,8 +49,8 @@ Resources:
             "region":"us-east-1", "title":"BackendErrors"}},
           - >-
             {"type":"metric", "x":0, "y":0, "width":12, "height":6,
-            "properties":{"metrics":[[ "AWS/ELB", "Latency",
-            "LoadBalancerName","
+            "properties":{"metrics":[[ "AWS/ApplicationELB", "TargetResponseTime",
+            "LoadBalancer","app/
           - !Ref AwsLoadBalancerName
           - '", {"stat": "Average"}]],'
           - >-
@@ -59,8 +58,8 @@ Resources:
             "stat":"Average", "region":"us-east-1", "title":"Latency"}},
           - >-
             {"type":"metric", "x":0, "y":0, "width":12, "height":6,
-            "properties":{"metrics":[[ "AWS/ELB",
-            "EstimatedALBActiveConnectionCount", "LoadBalancerName","
+            "properties":{"metrics":[[ "AWS/ApplicationELB",
+            "ActiveConnectionCount", "LoadBalancer","app/
           - !Ref AwsLoadBalancerName
           - '", {"stat": "Sum"}]],'
           - >-
@@ -68,8 +67,8 @@ Resources:
             "region":"us-east-1", "title":"Connections"}},
           - >-
             {"type":"metric", "x":0, "y":0, "width":12, "height":6,
-            "properties":{"metrics":[[ "AWS/ELB", "RequestCount",
-            "LoadBalancerName","
+            "properties":{"metrics":[[ "AWS/ApplicationELB", "RequestCount",
+            "LoadBalancer","app/
           - !Ref AwsLoadBalancerName
           - '", {"stat": "Sum"}]],'
           - >-
@@ -77,18 +76,9 @@ Resources:
             "region":"us-east-1", "title":"Requests"}},
           - >-
             {"type":"metric", "x":0, "y":0, "width":12, "height":6,
-            "properties":{"metrics":[[ "AWS/ELB", "HealthyHostCount",
-            "LoadBalancerName","
-          - !Ref AwsLoadBalancerName
-          - '", {"stat": "Maximum"}]],'
-          - >-
-            "view": "timeSeries", "stacked": true, "period":300,
-            "stat":"Maximum", "region":"us-east-1", "title":"HealthyHostCount"}},
-          - >-
-            {"type":"metric", "x":0, "y":0, "width":12, "height":6,
             "properties":{"metrics":[[ "AWS/ElasticBeanstalk", "EnvironmentHealth",
             "EnvironmentName","
-          - !Ref AWS::StackName
+          - !Ref EnvironmentName
           - '", {"stat": "Maximum"}]],'
           - >-
             "view": "timeSeries", "stacked": true, "period":300,
@@ -97,11 +87,11 @@ Resources:
             { "label": "Degraded", "value": 20 }, { "label": "Warning", "value": 15 }]}}},
           - >-
             {"type":"metric", "x":0, "y":0, "width":12, "height":6,
-            "properties":{"metrics":[[ "AWS/ELB", "HTTPCode_ELB_4XX",
-            "LoadBalancerName","
+            "properties":{"metrics":[[ "AWS/ApplicationELB", "HTTPCode_ELB_4XX_Count",
+            "LoadBalancer","app/
           - !Ref AwsLoadBalancerName
           - '", {"stat": "Sum"}],['
-          - '"AWS/ELB", "HTTPCode_ELB_5XX", "LoadBalancerName","'
+          - '"AWS/ApplicationELB", "HTTPCode_ELB_5XX_Count", "LoadBalancer","app/'
           - !Ref AwsLoadBalancerName
           - '", {"stat": "Sum"}]],'
           - >-

@@ -2,4 +2,5 @@ template_path: templates/bridgeserver2-dashboard.yaml
 stack_name: bridgeserver2-dashboard-prod
 parameters:
   AwsAutoScalingGroupName: awseb-e-mvnrxjmfxv-stack-AWSEBAutoScalingGroup-4YQX8L8XP7D2
-  AwsLoadBalancerName: awseb-AWSEB-16CTPSCW8LHR9
+  AwsLoadBalancerName: awseb-AWSEB-16CTPSCW8LHR9/b5e295fddf76bd26
+  EnvironmentName: bridgeserver2-prod
