@@ -110,6 +110,7 @@ git-crypt.key
 
 # sceptre artifacts
 remote-templates
+resolvers
 
 # lambda artifacts
 lambdas/*.zip

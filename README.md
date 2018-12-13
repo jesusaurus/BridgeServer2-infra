@@ -26,4 +26,12 @@ We have configured Travis to deploy CF template updates. Travis deploys using [s
 * https://travis-ci.org/Sage-Bionetworks/BridgeServer2-infra
 
 ## Secrets
-* We use the [AWS SSM](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) to store secrets for this project.  Sceptre retrieves the secrets using a [sceptre ssm resolver](https://github.com/cloudreach/sceptre/tree/v1/contrib/ssm-resolver) and passes them to the cloudformation stack on deployment.
+
+We use the [AWS SSM](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) to store secrets for this project.  Sceptre retrieves the secrets using a [sceptre ssm resolver](https://github.com/cloudreach/sceptre/tree/v1/contrib/ssm-resolver) and passes them to the cloudformation stack on deployment.
+
+To install these custom resolvers, create the resolvers directory in the root of your project, then run
+
+```
+wget https://raw.githubusercontent.com/cloudreach/sceptre/v1/contrib/ssm-resolver/ssm.py -O resolvers/ssm.py
+wget https://raw.githubusercontent.com/cloudreach/sceptre/v1/contrib/kms-resolver/kms.py -O resolvers/kms.py
+```
