@@ -18,4 +18,4 @@ parameters:
   Env: staging
   NewRelicAppName: bridgeserver2-uat
   NewRelicLicenseKey: !ssm /infra/NewRelicLicenseKey
-  SSLCertArn: !ssm /bridgeserver2-uat/SSLCertArn
+  SSLCertArn: !ssm /bridgeserver2-common/SSLCertArn
