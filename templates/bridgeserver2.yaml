@@ -88,9 +88,6 @@ Parameters:
       - Rolling
       - RollingWithAdditionalBatch
       - Immutable
-  SSLCertArn:
-    Description: SSL certificate for load balancer
-    Type: String
 Conditions:
   CreateDevResources: !Equals [ !Ref BridgeEnv, dev ]
 Resources:
@@ -213,7 +210,7 @@ Resources:
           Value: HTTPS
         - Namespace: 'aws:elbv2:listener:443'
           OptionName: SSLCertificateArns
-          Value: !Ref SSLCertArn
+          Value: !ImportValue us-east-1-bridgeserver2-common-SSLCertificate
         # Application environment options
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: ENV
