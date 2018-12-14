@@ -18,4 +18,3 @@ parameters:
   Env: develop
   NewRelicAppName: bridgeserver2-develop
   NewRelicLicenseKey: !ssm /infra/NewRelicLicenseKey
-  SSLCertArn: !ssm /bridgeserver2-common/SSLCertArn
