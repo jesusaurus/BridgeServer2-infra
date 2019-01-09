@@ -133,7 +133,7 @@ Resources:
           Value: !Ref EC2InstanceType
         - Namespace: 'aws:autoscaling:updatepolicy:rollingupdate'
           OptionName: RollingUpdateEnabled
-          Value: true
+          Value: 'true'
         - Namespace: 'aws:autoscaling:updatepolicy:rollingupdate'
           OptionName: RollingUpdateType
           Value: !Ref RollingUpdateType
@@ -189,10 +189,10 @@ Resources:
           Value: !Ref AwsEbHealthReportingSystem
         - Namespace: 'aws:elasticbeanstalk:hostmanager'
           OptionName: LogPublicationControl
-          Value: true
+          Value: 'true'
         - Namespace: 'aws:elasticbeanstalk:xray'
           OptionName: XRayEnabled
-          Value: false
+          Value: 'false'
         - Namespace: 'aws:elasticbeanstalk:environment'
           OptionName: LoadBalancerType
           Value: 'application'
@@ -271,7 +271,7 @@ Resources:
     Properties:
       HealthCheckConfig:
         FullyQualifiedDomainName: !GetAtt AWSEBEnvironment.EndpointURL
-        Port: "443"
+        Port: 443
         Type: "HTTPS"
         ResourcePath: "/"
       HealthCheckTags:
@@ -642,7 +642,6 @@ Resources:
       Threshold: 1
   IAMBridgeServer2ECManagedPolicy:
     Type: 'AWS::IAM::ManagedPolicy'
-    Description: Provide full access to ElastiCache except for delete
     Properties:
         PolicyDocument:
           Version: '2012-10-17'
@@ -662,7 +661,6 @@ Resources:
             Resource: "*"
   IAMBridgeServer2SQSManagedPolicy:
     Type: 'AWS::IAM::ManagedPolicy'
-    Description: Provide full access to SQS except for create
     Properties:
         PolicyDocument:
           Version: '2012-10-17'
