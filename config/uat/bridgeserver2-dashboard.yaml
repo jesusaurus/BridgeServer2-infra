@@ -1,4 +1,4 @@
-template_path: templates/bridgeserver2-dashboard.yaml
+template_path: bridgeserver2-dashboard.yaml
 stack_name: bridgeserver2-dashboard-uat
 parameters:
   AwsAutoScalingGroupName: awseb-e-wpygkt3rxe-stack-AWSEBAutoScalingGroup-1713G6ZQQVZ9Q
