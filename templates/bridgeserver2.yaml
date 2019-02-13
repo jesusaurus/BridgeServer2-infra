@@ -177,7 +177,7 @@ Resources:
           Value: '-Dnewrelic.config.file=/etc/newrelic.yml -javaagent:/usr/local/lib/newrelic/newrelic-agent.jar'
         - Namespace: 'aws:elasticbeanstalk:environment'
           OptionName: ServiceRole
-          Value: !Ref AWSIAMServiceRole
+          Value: !ImportValue us-east-1-bridgeserver2-common-BeanstalkServiceRole
         - Namespace: 'aws:elasticbeanstalk:environment:process:default'
           OptionName: Protocol
           Value: 'HTTP'
@@ -281,26 +281,6 @@ Resources:
             - '-'
             - - !Ref 'AWS::StackName'
               - AWSR53HealthCheck
-  AWSIAMServiceRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - elasticbeanstalk.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
-            Condition:
-              StringEquals:
-                sts:ExternalId: elasticbeanstalk
-      Path: /
-      ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth'
-        - 'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkService'
-        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
   AWSIAMRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -765,7 +745,7 @@ Resources:
                     - ':root'
                 - !ImportValue us-east-1-bootstrap-CfServiceRoleArn
                 - !GetAtt AWSIAMBridgeServer2ServiceUser.Arn
-                - !GetAtt AWSIAMServiceRole.Arn
+                - !ImportValue us-east-1-bridgeserver2-common-BeanstalkServiceRoleArn
             Action:
               - "kms:Encrypt"
               - "kms:Decrypt"
