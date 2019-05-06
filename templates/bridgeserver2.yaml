@@ -19,6 +19,26 @@ Parameters:
       - basic
       - enhanced
     ConstraintDescription: must be either basic or enhanced
+  AwsKey:
+    Type: String
+  AwsKeyConsents:
+    Type: String
+  AwsKeyUpload:
+    Type: String
+  AwsKeyUploadCms:
+    Type: String
+  AwsSecretKey:
+    Type: String
+    NoEcho: true
+  AwsSecretKeyConsents:
+    Type: String
+    NoEcho: true
+  AwsSecretKeyUpload:
+    Type: String
+    NoEcho: true
+  AwsSecretKeyUploadCms:
+    Type: String
+    NoEcho: true
   AwsSnsBounceNotificationEndpoint:
     Type: String
     Description: Email address for SNS bounce notifications
@@ -61,6 +81,9 @@ Parameters:
       - t2.large
       - t2.xlarge
       - t2.2xlarge
+  EmailUnsubscribeToken:
+    Type: String
+    NoEcho: true
   Env:
     Type: String
     Default: develop
@@ -68,6 +91,20 @@ Parameters:
       - production
       - staging
       - develop
+  HibernateConnectionPassword:
+    Type: String
+    NoEcho: true
+  HibernateConnectionUrl:
+    Type: String
+  HibernateConnectionUsername:
+    Type: String
+  HibernateConnectionUsessl:
+    Type: String
+    Default: true
+    AllowedValues:
+      - true
+      - false
+    ConstraintDescription: must be either true or false
   NewRelicAppName:
     Type: String
   NewRelicLicenseKey:
@@ -88,6 +125,16 @@ Parameters:
       - Rolling
       - RollingWithAdditionalBatch
       - Immutable
+  SnsKey:
+    Type: String
+  SnsSecretKey:
+    Type: String
+    NoEcho: true
+  SynapseApiKey:
+    Type: String
+    NoEcho: true
+  SynapseUser:
+    Type: String
 Conditions:
   CreateDevResources: !Equals [ !Ref BridgeEnv, dev ]
 Resources:
@@ -213,11 +260,41 @@ Resources:
           Value: !ImportValue us-east-1-bridgeserver2-common-SSLCertificate
         # Application environment options
         - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: AWS_KEY
+          Value: !Ref AwsKey
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: AWS_KEY_CONSENTS
+          Value: !Ref AwsKeyConsents
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: AWS_KEY_UPLOAD
+          Value: !Ref AwsKeyUpload
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: AWS_KEY_UPLOAD_CMS
+          Value: !Ref AwsKeyUploadCms
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: AWS_SECRET_KEY
+          Value: !Ref AwsSecretKey
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: AWS_SECRET_KEY_CONSENTS
+          Value: !Ref AwsSecretKeyConsents
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: AWS_SECRET_KEY_UPLOAD
+          Value: !Ref AwsSecretKeyUpload
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: AWS_SECRET_KEY_UPLOAD_CMS
+          Value: !Ref AwsSecretKeyUploadCms
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: ENV
           Value: !Ref Env
         - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: BRIDGE_ENV
+          Value: !Ref BridgeEnv
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: bridge.env
           Value: !Ref BridgeEnv
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: BRIDGE_USER
+          Value: !Ref BridgeUser
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: bridge.user
           Value: !Ref BridgeUser
@@ -226,11 +303,38 @@ Resources:
           Value:
             Fn::ImportValue: !Sub "${BridgePFStackName}-ElastiCacheUrl"
         - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: EMAIL_UNSUBSCRIBE_TOKEN
+          Value: !Ref EmailUnsubscribeToken
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: HIBERNATE_CONNECTION_PASSWORD
+          Value: !Ref HibernateConnectionPassword
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: HIBERNATE_CONNECTION_URL
+          Value: !Ref HibernateConnectionUrl
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: HIBERNATE_CONNECTION_USERNAME
+          Value: !Ref HibernateConnectionUsername
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: HIBERNATE_CONNECTION_USESSL
+          Value: !Ref HibernateConnectionUsessl
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: NEW_RELIC_APP_NAME
           Value: !Ref NewRelicAppName
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: NEW_RELIC_LICENSE_KEY
           Value: !Ref NewRelicLicenseKey
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: SNS_KEY
+          Value: !Ref SnsKey
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: SNS_SECRET_KEY
+          Value: !Ref SnsSecretKey
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: SYNAPSE_API_KEY
+          Value: !Ref SynapseApiKey
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: SYNAPSE_USER
+          Value: !Ref SynapseUser
   AWSEBEnvironment:
     Type: 'AWS::ElasticBeanstalk::Environment'
     Properties:
@@ -281,6 +385,24 @@ Resources:
             - '-'
             - - !Ref 'AWS::StackName'
               - AWSR53HealthCheck
+  # cloudwatch integration https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/AWSHowTo.cloudwatchlogs.html
+  AWSIAMCloudwatchIntegrationManagedPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            Action:
+              - 'logs:CreateLogGroup'
+              - 'logs:CreateLogStream'
+              - 'logs:GetLogEvents'
+              - 'logs:PutLogEvents'
+              - 'logs:DescribeLogGroups'
+              - 'logs:DescribeLogStreams'
+              - 'logs:PutRetentionPolicy'
+            Effect: Allow
+            Resource:
+              - !Sub 'arn:aws:logs:${AWS::Region}:*:*'
   AWSIAMRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -303,6 +425,7 @@ Resources:
         - 'arn:aws:iam::aws:policy/AmazonRDSFullAccess'
         - !Ref IAMBridgeServer2ECManagedPolicy
         - !Ref IAMBridgeServer2SQSManagedPolicy
+        - !Ref AWSIAMCloudwatchIntegrationManagedPolicy
   AWSIAMInstanceProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
