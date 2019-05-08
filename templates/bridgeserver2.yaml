@@ -45,9 +45,6 @@ Parameters:
   AwsSnsNotificationEndpoint:
     Type: String
     Description: Email address for AWS SNS notifications
-  AwsSolutionStackName:
-    Description: The AWS Solution Stack
-    Type: String
   BridgeEnv:
     Type: String
     Default: dev
@@ -163,7 +160,7 @@ Resources:
     Type: 'AWS::ElasticBeanstalk::ConfigurationTemplate'
     Properties:
       ApplicationName: !ImportValue us-east-1-bridgeserver2-common-BeanstalkAppName
-      SolutionStackName: !Ref AwsSolutionStackName
+      SolutionStackName: '64bit Amazon Linux 2018.03 v3.1.3 running Tomcat 8.5 Java 8'
       OptionSettings:
         # EB environment options
         - Namespace: 'aws:autoscaling:asg'
@@ -178,6 +175,9 @@ Resources:
         - Namespace: 'aws:autoscaling:launchconfiguration'
           OptionName: InstanceType
           Value: !Ref EC2InstanceType
+        - Namespace: 'aws:autoscaling:launchconfiguration'
+          OptionName: SecurityGroups
+          Value: !Ref AWSEC2SecurityGroup
         - Namespace: 'aws:autoscaling:updatepolicy:rollingupdate'
           OptionName: RollingUpdateEnabled
           Value: 'true'
@@ -260,62 +260,56 @@ Resources:
           Value: !ImportValue us-east-1-bridgeserver2-common-SSLCertificate
         # Application environment options
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: AWS_KEY
+          OptionName: aws.key
           Value: !Ref AwsKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: AWS_KEY_CONSENTS
+          OptionName: aws.key.consents
           Value: !Ref AwsKeyConsents
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: AWS_KEY_UPLOAD
+          OptionName: aws.key.upload
           Value: !Ref AwsKeyUpload
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: AWS_KEY_UPLOAD_CMS
+          OptionName: aws.key.upload.cms
           Value: !Ref AwsKeyUploadCms
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: AWS_SECRET_KEY
+          OptionName: aws.secret.key
           Value: !Ref AwsSecretKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: AWS_SECRET_KEY_CONSENTS
+          OptionName: aws.secret.key.consents
           Value: !Ref AwsSecretKeyConsents
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: AWS_SECRET_KEY_UPLOAD
+          OptionName: aws.secret.key.upload
           Value: !Ref AwsSecretKeyUpload
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: AWS_SECRET_KEY_UPLOAD_CMS
+          OptionName: aws.secret.key.upload.cms
           Value: !Ref AwsSecretKeyUploadCms
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: ENV
           Value: !Ref Env
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: BRIDGE_ENV
-          Value: !Ref BridgeEnv
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: bridge.env
           Value: !Ref BridgeEnv
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: BRIDGE_USER
-          Value: !Ref BridgeUser
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: bridge.user
           Value: !Ref BridgeUser
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: ELASTICACHE_URL
+          OptionName: elasticache.url
           Value:
             Fn::ImportValue: !Sub "${BridgePFStackName}-ElastiCacheUrl"
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: EMAIL_UNSUBSCRIBE_TOKEN
+          OptionName: email.unsubscribe.token
           Value: !Ref EmailUnsubscribeToken
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: HIBERNATE_CONNECTION_PASSWORD
+          OptionName: hibernate.connection.password
           Value: !Ref HibernateConnectionPassword
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: HIBERNATE_CONNECTION_URL
+          OptionName: hibernate.connection.url
           Value: !Ref HibernateConnectionUrl
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: HIBERNATE_CONNECTION_USERNAME
+          OptionName: hibernate.connection.username
           Value: !Ref HibernateConnectionUsername
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: HIBERNATE_CONNECTION_USESSL
+          OptionName: hibernate.connection.useSSL
           Value: !Ref HibernateConnectionUsessl
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: NEW_RELIC_APP_NAME
@@ -324,16 +318,16 @@ Resources:
           OptionName: NEW_RELIC_LICENSE_KEY
           Value: !Ref NewRelicLicenseKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: SNS_KEY
+          OptionName: sns.key
           Value: !Ref SnsKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: SNS_SECRET_KEY
+          OptionName: sns.secret.key
           Value: !Ref SnsSecretKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: SYNAPSE_API_KEY
+          OptionName: synapse.api.key
           Value: !Ref SynapseApiKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: SYNAPSE_USER
+          OptionName: synapse.user
           Value: !Ref SynapseUser
   AWSEBEnvironment:
     Type: 'AWS::ElasticBeanstalk::Environment'
@@ -346,6 +340,39 @@ Resources:
       Tier:
         Name: WebServer
         Type: Standard
+  AWSEC2SecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupName: !Join
+        - '-'
+        - - !Ref 'AWS::StackName'
+          - AWSEC2SecurityGroup
+      GroupDescription: EC2 Security Group
+      VpcId: !ImportValue us-east-1-BridgeServer2-vpc-VPCId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !Ref AWSLBSecurityGroup
+  AWSLBSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Load Balancer Security Group
+      VpcId: !ImportValue us-east-1-BridgeServer2-vpc-VPCId
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: 443
+          ToPort: 443
+          IpProtocol: tcp
+        - CidrIp: 0.0.0.0/0
+          FromPort: 80
+          ToPort: 80
+          IpProtocol: tcp
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: 80
+          ToPort: 80
+          IpProtocol: tcp
   AWSS3AppDeployBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
@@ -920,6 +947,10 @@ Outputs:
           - EndpointURL
     Export:
       Name: !Sub '${AWS::Region}-${AWS::StackName}-EnvironmentUrl'
+  AWSEC2SecurityGroup:
+    Value: !Ref AWSEC2SecurityGroup
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-EC2SecurityGroup'
   AWSIAMBridgeServer2ServiceUserAccessKey:
     Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
     Export:
