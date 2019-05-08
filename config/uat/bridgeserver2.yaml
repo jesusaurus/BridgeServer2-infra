@@ -16,7 +16,6 @@ parameters:
   AwsSecretKeyUploadCms: !ssm /bridgeserver2-uat/AwsSecretKeyUploadCms
   AwsSnsBounceNotificationEndpoint: bridgepf-uat-bounce-notifications@sagebase.org
   AwsSnsNotificationEndpoint: bridgepf-uat@sagebase.org
-  AwsSolutionStackName: '64bit Amazon Linux 2018.03 v3.0.1 running Tomcat 8 Java 8'
   BridgeEnv: uat
   BridgePFStackName: bridgepf-uat
   BridgeUser: heroku
