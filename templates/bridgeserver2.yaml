@@ -340,6 +340,20 @@ Resources:
       Tier:
         Name: WebServer
         Type: Standard
+  AWSEC2RdsSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: !Join
+        - '-'
+        - - !Ref 'AWS::StackName'
+          - AWSEC2RdsSecurityGroup
+      # RDS lives in a different VPC (for now)
+      VpcId: 'vpc-9c70bbf9'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref AWSEC2SecurityGroup
   AWSEC2SecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
