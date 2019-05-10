@@ -17,6 +17,7 @@ parameters:
   AwsSnsBounceNotificationEndpoint: bridge-bounce-notifications@sagebase.org
   AwsSnsNotificationEndpoint: bridgeops@sagebase.org
   BridgeEnv: prod
+  BridgeHealthcodeRedisKey: !ssm /bridgeserver2-prod/BridgeHealthcodeRedisKey
   BridgePFStackName: bridgepf-prod
   BridgeUser: heroku
   DNSHostname: bridgeserver2-prod

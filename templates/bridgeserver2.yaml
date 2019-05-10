@@ -53,6 +53,9 @@ Parameters:
       - uat
       - dev
     ConstraintDescription: must specify dev, uat or prod.
+  BridgeHealthcodeRedisKey:
+    Type: String
+    NoEcho: true
   BridgePFStackName:
     Type: String
     Description: Name of the corresponding BridgePF stack. Used to import Elasticache and RDS until we can properly migrate them.
@@ -289,6 +292,9 @@ Resources:
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: bridge.env
           Value: !Ref BridgeEnv
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: bridge.healthcode.redis.key
+          Value: !Ref BridgeHealthcodeRedisKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: bridge.user
           Value: !Ref BridgeUser
