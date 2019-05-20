@@ -3,6 +3,7 @@ stack_name: bridgeserver2-prod
 parameters:
   AppDeployBucket: org-sagebridge-bridgeserver2-deployment-prod
   AppHealthcheckUrl: '/'
+  AttachmentBucket: org-sagebridge-attachment-prod
   AwsAutoScalingMaxSize: "2"
   AwsAutoScalingMinSize: "2"
   AwsEbHealthReportingSystem: enhanced

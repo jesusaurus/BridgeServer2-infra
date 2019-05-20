@@ -6,6 +6,8 @@ Parameters:
   AppHealthcheckUrl:
     Type: String
     Description: The AWS EB health check path
+  AttachmentBucket:
+    Type: String
   AwsAutoScalingMaxSize:
     Type: String
     Default: '1'
@@ -932,6 +934,36 @@ Resources:
           - !Ref AWS::StackName
           - '/KmsKey'
       TargetKeyId: !Ref AWSKmsKey
+  SynapseExternalStoragePolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: AttachmentBucket
+      PolicyDocument:
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              AWS: "arn:aws:iam::325565585839:root"
+            Action:
+              - "s3:ListBucket*"
+              - "s3:GetBucketLocation"
+            Resource:
+              - !Join
+                - ""
+                - - "arn:aws:s3:::"
+                  - !Ref AttachmentBucket
+          - Effect: "Allow"
+            Principal:
+              AWS: "arn:aws:iam::325565585839:root"
+            Action:
+              - "s3:GetObject*"
+              - "s3:*MultipartUpload*"
+            Resource:
+              - !Join
+                - ""
+                - - "arn:aws:s3:::"
+                  - !Ref AttachmentBucket
+                  - "/*"
 Outputs:
   AppPublicEndpoint:
     Value: !Join
