@@ -513,7 +513,7 @@ Resources:
         - - /aws/elasticbeanstalk
           - !Ref 'AWS::StackName'
           - var/log/tomcat8/catalina.out
-      FilterPattern: 'ERROR'
+      FilterPattern: 'ERROR - org.hibernate'
       MetricTransformations:
         -
           MetricValue: "1"
