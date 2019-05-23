@@ -618,7 +618,7 @@ Resources:
         - - /aws/elasticbeanstalk
           - !Ref 'AWS::StackName'
           - var/log/tomcat8/catalina.out
-      FilterPattern: '{ $.status = 400 }'
+      FilterPattern: '{ ($.status = 400) && ($.study != "psu-m2c2") }'
       MetricTransformations:
         -
           MetricValue: "1"
@@ -653,7 +653,7 @@ Resources:
         - - /aws/elasticbeanstalk
           - !Ref 'AWS::StackName'
           - var/log/tomcat8/catalina.out
-      FilterPattern: '{ $.status = 403 }'
+      FilterPattern: '{ ($.status = 403) && ($.study != "psu-m2c2") }'
       MetricTransformations:
         -
           MetricValue: "1"
@@ -688,7 +688,7 @@ Resources:
         - - /aws/elasticbeanstalk
           - !Ref 'AWS::StackName'
           - var/log/tomcat8/catalina.out
-      FilterPattern: '{ $.status = 409 }'
+      FilterPattern: '{ ($.status = 409) && ($.study != "psu-m2c2") && ($.study != "samsung-blood-pressure") }'
       MetricTransformations:
         -
           MetricValue: "1"
@@ -723,7 +723,7 @@ Resources:
         - - /aws/elasticbeanstalk
           - !Ref 'AWS::StackName'
           - var/log/tomcat8/catalina.out
-      FilterPattern: '{( $.status = 412 ) && ( $.uri != "*/signIn*" ) && ( $.uri != "*/verifyEmail*" ) }'
+      FilterPattern: '{( $.status = 412 ) && ( $.uri != "*/signIn*" ) && ( $.uri != "*/verifyEmail*" ) && ($.study != "psu-m2c2")  && ($.study != "samsung-blood-pressure") }'
       MetricTransformations:
         -
           MetricValue: "1"
