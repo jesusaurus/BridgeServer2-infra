@@ -548,7 +548,7 @@ Resources:
         - - /aws/elasticbeanstalk
           - !Ref 'AWS::StackName'
           - var/log/tomcat8/catalina.out
-      FilterPattern: 'WARN'
+      FilterPattern: 'WARN - "No content length specified for stream data"'
       MetricTransformations:
         -
           MetricValue: "1"
