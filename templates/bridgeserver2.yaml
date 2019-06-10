@@ -609,7 +609,7 @@ Resources:
       Statistic: Sum
       Threshold: 1
       TreatMissingData: notBreaching
-  AWSCW400MetricFilter:
+  AWSCW4XXMetricFilter:
     Type: "AWS::Logs::MetricFilter"
     DependsOn: AWSLogsLogGroup
     Properties:
@@ -618,16 +618,16 @@ Resources:
         - - /aws/elasticbeanstalk
           - !Ref 'AWS::StackName'
           - var/log/tomcat8/catalina.out
-      FilterPattern: '{ ($.status = 400) && ($.study != "psu-m2c2") }'
+      FilterPattern: '{ ($.status >= 400) && ($.status < 500) && ($.status != 401) }'
       MetricTransformations:
         -
           MetricValue: "1"
-          MetricNamespace: "LogMetrics/400s"
+          MetricNamespace: "LogMetrics/4XXs"
           MetricName: !Join
             - '-'
             - - !Ref 'AWS::StackName'
-              - 400Count
-  AWSCW400Alarm:
+              - 4XXCount
+  AWSCW4XXAlarm:
     Type: "AWS::CloudWatch::Alarm"
     Properties:
       ActionsEnabled: true
@@ -638,116 +638,11 @@ Resources:
       MetricName: !Join
         - '-'
         - - !Ref 'AWS::StackName'
-          - 400Count
-      Namespace: LogMetrics/400s
+          - 4XXCount
+      Namespace: LogMetrics/4XXs
       Period: 3600
       Statistic: Sum
-      Threshold: 30
-      TreatMissingData: notBreaching
-  AWSCW403MetricFilter:
-    Type: "AWS::Logs::MetricFilter"
-    DependsOn: AWSLogsLogGroup
-    Properties:
-      LogGroupName: !Join
-        - '/'
-        - - /aws/elasticbeanstalk
-          - !Ref 'AWS::StackName'
-          - var/log/tomcat8/catalina.out
-      FilterPattern: '{ ($.status = 403) && ($.study != "psu-m2c2") }'
-      MetricTransformations:
-        -
-          MetricValue: "1"
-          MetricNamespace: "LogMetrics/403s"
-          MetricName: !Join
-            - '-'
-            - - !Ref 'AWS::StackName'
-              - 403Count
-  AWSCW403Alarm:
-    Type: "AWS::CloudWatch::Alarm"
-    Properties:
-      ActionsEnabled: true
-      AlarmActions:
-        - !Ref AWSSNSTopic
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      EvaluationPeriods: 1
-      MetricName: !Join
-        - '-'
-        - - !Ref 'AWS::StackName'
-          - 403Count
-      Namespace: LogMetrics/403s
-      Period: 3600
-      Statistic: Sum
-      Threshold: 10
-      TreatMissingData: notBreaching
-  AWSCW409MetricFilter:
-    Type: "AWS::Logs::MetricFilter"
-    DependsOn: AWSLogsLogGroup
-    Properties:
-      LogGroupName: !Join
-        - '/'
-        - - /aws/elasticbeanstalk
-          - !Ref 'AWS::StackName'
-          - var/log/tomcat8/catalina.out
-      FilterPattern: '{ ($.status = 409) && ($.study != "psu-m2c2") && ($.study != "samsung-blood-pressure") }'
-      MetricTransformations:
-        -
-          MetricValue: "1"
-          MetricNamespace: "LogMetrics/409s"
-          MetricName: !Join
-            - '-'
-            - - !Ref 'AWS::StackName'
-              - 409Count
-  AWSCW409Alarm:
-    Type: "AWS::CloudWatch::Alarm"
-    Properties:
-      ActionsEnabled: true
-      AlarmActions:
-        - !Ref AWSSNSTopic
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      EvaluationPeriods: 1
-      MetricName: !Join
-        - '-'
-        - - !Ref 'AWS::StackName'
-          - 409Count
-      Namespace: LogMetrics/409s
-      Period: 3600
-      Statistic: Sum
-      Threshold: 15
-      TreatMissingData: notBreaching
-  AWSCW412MetricFilter:
-    Type: "AWS::Logs::MetricFilter"
-    DependsOn: AWSLogsLogGroup
-    Properties:
-      LogGroupName: !Join
-        - '/'
-        - - /aws/elasticbeanstalk
-          - !Ref 'AWS::StackName'
-          - var/log/tomcat8/catalina.out
-      FilterPattern: '{( $.status = 412 ) && ( $.uri != "*/signIn*" ) && ( $.uri != "*/verifyEmail*" ) && ($.study != "psu-m2c2")  && ($.study != "samsung-blood-pressure") }'
-      MetricTransformations:
-        -
-          MetricValue: "1"
-          MetricNamespace: "LogMetrics/412s"
-          MetricName: !Join
-            - '-'
-            - - !Ref 'AWS::StackName'
-              - 412Count
-  AWSCW412Alarm:
-    Type: "AWS::CloudWatch::Alarm"
-    Properties:
-      ActionsEnabled: true
-      AlarmActions:
-        - !Ref AWSSNSTopic
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      EvaluationPeriods: 1
-      MetricName: !Join
-        - '-'
-        - - !Ref 'AWS::StackName'
-          - 412Count
-      Namespace: LogMetrics/412s
-      Period: 3600
-      Statistic: Sum
-      Threshold: 30
+      Threshold: 1000
       TreatMissingData: notBreaching
   AWSCWCpuUtilizationAlarm:
     Type: "AWS::CloudWatch::Alarm"
