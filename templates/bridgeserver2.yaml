@@ -301,6 +301,14 @@ Resources:
           OptionName: bridge.user
           Value: !Ref BridgeUser
         - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: elasticache.new.url
+          Value: !Join
+            - ''
+            - - 'redis://'
+              - !GetAtt ElasticacheCluster.RedisEndpoint.Address
+              - ':'
+              - !GetAtt ElasticacheCluster.RedisEndpoint.Port
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: elasticache.url
           Value:
             Fn::ImportValue: !Sub "${BridgePFStackName}-ElastiCacheUrl"
@@ -348,6 +356,42 @@ Resources:
       Tier:
         Name: WebServer
         Type: Standard
+  ElasticacheSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: !Join
+        - '-'
+        - - !Ref 'AWS::StackName'
+          - ElasticacheSecurityGroup
+      VpcId: !ImportValue us-east-1-BridgeServer2-vpc-VPCId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 6379
+          ToPort: 6379
+          SourceSecurityGroupId: !Ref AWSEC2SecurityGroup
+  ElasticacheSubnetGroup:
+    Type: "AWS::ElastiCache::SubnetGroup"
+    Properties:
+      Description: !Join
+          - '-'
+          - - !Ref 'AWS::StackName'
+            - ElasticacheSubnetGroup
+      SubnetIds:
+        - !ImportValue us-east-1-BridgeServer2-vpc-PublicSubnet
+        - !ImportValue us-east-1-BridgeServer2-vpc-PublicSubnet1
+        - !ImportValue us-east-1-BridgeServer2-vpc-PublicSubnet2
+        - !ImportValue us-east-1-BridgeServer2-vpc-PrivateSubnet
+        - !ImportValue us-east-1-BridgeServer2-vpc-PrivateSubnet1
+        - !ImportValue us-east-1-BridgeServer2-vpc-PrivateSubnet2
+  ElasticacheCluster:
+    Type: 'AWS::ElastiCache::CacheCluster'
+    Properties:
+      Engine: redis
+      CacheNodeType: cache.t2.micro
+      NumCacheNodes: 1
+      VpcSecurityGroupIds:
+        - !GetAtt ElasticacheSecurityGroup.GroupId
+      CacheSubnetGroupName: !Ref ElasticacheSubnetGroup
   AWSEC2RdsSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -362,6 +406,35 @@ Resources:
           FromPort: 3306
           ToPort: 3306
           SourceSecurityGroupId: !Ref AWSEC2SecurityGroup
+  RdsNewToOldSecurityGroupIngress:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref AWSEC2RdsSecurityGroup
+      IpProtocol: tcp
+      FromPort: 3306
+      ToPort: 3306
+      SourceSecurityGroupId: !Ref RdsNewVpcSecurityGroup
+  RdsNewVpcSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: !Join
+        - '-'
+        - - !Ref 'AWS::StackName'
+          - RdsNewVpcSecurityGroup
+      VpcId: !ImportValue us-east-1-BridgeServer2-vpc-VPCId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref AWSEC2SecurityGroup
+  RdsOldToNewSecurityGroupIngress:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref RdsNewVpcSecurityGroup
+      IpProtocol: tcp
+      FromPort: 3306
+      ToPort: 3306
+      SourceSecurityGroupId: !Ref AWSEC2RdsSecurityGroup
   AWSEC2SecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
