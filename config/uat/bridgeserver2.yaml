@@ -19,7 +19,6 @@ parameters:
   AwsSnsNotificationEndpoint: bridgepf-uat@sagebase.org
   BridgeEnv: uat
   BridgeHealthcodeRedisKey: !ssm /bridgeserver2-uat/BridgeHealthcodeRedisKey
-  BridgePFStackName: bridgepf-uat
   BridgeUser: heroku
   DNSHostname: bridgeserver2-uat
   DNSDomain: sagebridge.org

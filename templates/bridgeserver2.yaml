@@ -58,9 +58,6 @@ Parameters:
   BridgeHealthcodeRedisKey:
     Type: String
     NoEcho: true
-  BridgePFStackName:
-    Type: String
-    Description: Name of the corresponding BridgePF stack. Used to import Elasticache and RDS until we can properly migrate them.
   BridgeUser:
     Type: String
     Default: heroku
@@ -310,8 +307,12 @@ Resources:
               - !GetAtt ElasticacheCluster.RedisEndpoint.Port
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: elasticache.url
-          Value:
-            Fn::ImportValue: !Sub "${BridgePFStackName}-ElastiCacheUrl"
+          Value: !Join
+            - ''
+            - - 'redis://'
+              - !GetAtt ElasticacheCluster.RedisEndpoint.Address
+              - ':'
+              - !GetAtt ElasticacheCluster.RedisEndpoint.Port
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: email.unsubscribe.token
           Value: !Ref EmailUnsubscribeToken
