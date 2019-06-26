@@ -19,7 +19,6 @@ parameters:
   AwsSnsNotificationEndpoint: bridgepf-develop@sagebase.org
   BridgeEnv: dev
   BridgeHealthcodeRedisKey: !ssm /bridgeserver2-develop/BridgeHealthcodeRedisKey
-  BridgePFStackName: bridgepf-develop
   BridgeUser: heroku
   DNSHostname: bridgeserver2-develop
   DNSDomain: sagebridge.org
