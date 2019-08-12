@@ -750,9 +750,13 @@ Resources:
       EvaluationPeriods: 1
       MetricName: EnvironmentHealth
       Namespace: AWS/ElasticBeanstalk
-      Period: 900
-      Statistic: Maximum
-      Threshold: 25
+      Dimensions:
+        - Name: "EnvironmentName"
+          Value: !Ref 'AWS::StackName'
+      Period: 3600
+      Statistic: Average
+      # Note: 20 is "warning", which can happen if an entire host is down.
+      Threshold: 20
   AWSCWHealthCheckStatusAlarm:
     Type: "AWS::CloudWatch::Alarm"
     Properties:
