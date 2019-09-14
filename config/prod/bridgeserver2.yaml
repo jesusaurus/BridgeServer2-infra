@@ -20,6 +20,8 @@ parameters:
   BridgeEnv: prod
   BridgeHealthcodeRedisKey: !ssm /bridgeserver2-prod/BridgeHealthcodeRedisKey
   BridgeUser: heroku
+  DatabaseBackupRetentionDays: 30
+  DatabaseInstanceType: db.t2.medium
   DNSHostname: bridgeserver2-prod
   DNSDomain: sagebridge.org
   EC2InstanceType: t2.medium

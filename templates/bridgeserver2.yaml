@@ -61,6 +61,21 @@ Parameters:
   BridgeUser:
     Type: String
     Default: heroku
+  DatabaseAvailabilityZone:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: 'us-east-1a'
+  DatabaseBackupRetentionDays:
+    Type: Number
+    Default: '1'
+  DatabaseClusterAvailabilityZones:
+    Type: List<AWS::EC2::AvailabilityZone::Name>
+    Default: 'us-east-1a,us-east-1b,us-east-1c'
+  DatabaseInstanceType:
+    Type: String
+    Default: 'db.t2.small'
+  DatabaseReplicaAvailabilityZone:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: 'us-east-1b'
   DNSDomain:
     Type: String
     Description: DNS Domain name for deployment
@@ -137,6 +152,57 @@ Parameters:
 Conditions:
   CreateDevResources: !Equals [ !Ref BridgeEnv, dev ]
 Resources:
+  DBCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      AvailabilityZones: !Ref DatabaseClusterAvailabilityZones
+      BackupRetentionPeriod: !Ref DatabaseBackupRetentionDays
+      DatabaseName: 'BridgeDB'
+      DBClusterIdentifier: !Join
+        - '-'
+        - - !Ref 'AWS::StackName'
+          - aurora
+      DBSubnetGroupName: !ImportValue us-east-1-bridgeserver2-common-DBSubnetGroupName
+      DeletionProtection: true
+      Engine: 'aurora'
+      EngineMode: 'provisioned'
+      EngineVersion: '5.6.10a'
+      MasterUsername: !Ref HibernateConnectionUsername
+      MasterUserPassword: !Ref HibernateConnectionPassword
+      Port: 3306
+      PreferredMaintenanceWindow: Mon:10:00-Mon:10:30
+      StorageEncrypted: true
+      VpcSecurityGroupIds:
+        - !ImportValue us-east-1-BridgeServer2-vpc-VpnSecurityGroup
+        - !Ref RdsNewVpcSecurityGroup
+  DBInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: true
+      AvailabilityZone: !Ref DatabaseAvailabilityZone
+      DBClusterIdentifier: !Ref DBCluster
+      DBInstanceClass: !Ref DatabaseInstanceType
+      DBInstanceIdentifier: !Join
+        - '-'
+        - - !Ref 'AWS::StackName'
+          - aurora
+      Engine: 'aurora'
+      PubliclyAccessible: false
+  DBInstanceReplica:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: true
+      AvailabilityZone: !Ref DatabaseReplicaAvailabilityZone
+      DBClusterIdentifier: !Ref DBCluster
+      DBInstanceClass: !Ref DatabaseInstanceType
+      DBInstanceIdentifier: !Join
+        - '-'
+        - - !Ref 'AWS::StackName'
+          - aurora-replica
+      Engine: 'aurora'
+      PubliclyAccessible: false
   LoadBalancerAccessLogsBucket:
     Type: 'AWS::S3::Bucket'
   LoadBalancerAccessLogsBucketPolicy:
@@ -445,6 +511,14 @@ Resources:
       FromPort: 3306
       ToPort: 3306
       SourceSecurityGroupId: !Ref AWSEC2RdsSecurityGroup
+  RdsNewToNewSecurityGroupIngress:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref RdsNewVpcSecurityGroup
+      IpProtocol: tcp
+      FromPort: 3306
+      ToPort: 3306
+      SourceSecurityGroupId: !Ref RdsNewVpcSecurityGroup
   AWSEC2SecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -1003,3 +1077,11 @@ Outputs:
     Value: !GetAtt AWSIAMBridgeServer2LocalServiceUserAccessKey.SecretAccessKey
     Export:
       Name: !Sub '${AWS::Region}-${AWS::StackName}-BridgeServer2LocalServiceUserSecretAccessKey'
+  DatabaseEndpointAddress:
+    Value: !GetAtt DBCluster.Endpoint.Address
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-DatabaseEndpointAddress'
+  DatabaseEndpointPort:
+    Value: !GetAtt DBCluster.Endpoint.Port
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-DatabaseEndpointPort'
