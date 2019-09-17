@@ -1,5 +1,7 @@
 template_path: bridgeserver2.yaml
 stack_name: bridgeserver2-develop
+depedencies:
+  - develop/bridgeserver2-db
 parameters:
   AppDeployBucket: org-sagebridge-bridgeserver2-deployment-develop
   AppHealthcheckUrl: '/'
@@ -18,6 +20,7 @@ parameters:
   AwsSnsBounceNotificationEndpoint: bridgepf-develop-bounce-notifications@sagebase.org
   AwsSnsNotificationEndpoint: bridgepf-develop@sagebase.org
   BridgeEnv: dev
+  BridgeDBStackName: bridgeserver2-db-develop
   BridgeHealthcodeRedisKey: !ssm /bridgeserver2-develop/BridgeHealthcodeRedisKey
   BridgeUser: heroku
   DNSHostname: bridgeserver2-develop

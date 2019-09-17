@@ -1,0 +1,17 @@
+Description: Common resources for all stacks of BridgeServer2 Application
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: 'Subnet for Server2 VPC'
+      DBSubnetGroupName: 'bridgeserver2-rds-subnet'
+      SubnetIds:
+        - !ImportValue us-east-1-BridgeServer2-vpc-PrivateSubnet
+        - !ImportValue us-east-1-BridgeServer2-vpc-PrivateSubnet1
+        - !ImportValue us-east-1-BridgeServer2-vpc-PrivateSubnet2
+Outputs:
+  DBSubnetGroupName:
+    Value: !Ref DBSubnetGroup
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-DBSubnetGroupName'

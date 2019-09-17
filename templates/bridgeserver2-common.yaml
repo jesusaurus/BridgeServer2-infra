@@ -37,15 +37,6 @@ Resources:
             DeleteSourceFromS3: true
             Enabled: true
             MaxAgeInDays: 90
-  DBSubnetGroup:
-    Type: AWS::RDS::DBSubnetGroup
-    Properties:
-      DBSubnetGroupDescription: 'Subnet for Server2 VPC'
-      DBSubnetGroupName: 'bridgeserver2-rds-subnet'
-      SubnetIds:
-        - !ImportValue us-east-1-BridgeServer2-vpc-PrivateSubnet
-        - !ImportValue us-east-1-BridgeServer2-vpc-PrivateSubnet1
-        - !ImportValue us-east-1-BridgeServer2-vpc-PrivateSubnet2
   SSLCertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
@@ -136,10 +127,6 @@ Outputs:
     Value: !GetAtt BeanstalkServiceRole.Arn
     Export:
       Name: !Sub '${AWS::Region}-${AWS::StackName}-BeanstalkServiceRoleArn'
-  DBSubnetGroupName:
-    Value: !Ref DBSubnetGroup
-    Export:
-      Name: !Sub '${AWS::Region}-${AWS::StackName}-DBSubnetGroupName'
   SSLCertificate:
     Value: !Ref SSLCertificate
     Export:

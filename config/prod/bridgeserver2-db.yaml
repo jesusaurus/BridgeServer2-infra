@@ -1,0 +1,7 @@
+template_path: bridgeserver2-db.yaml
+stack_name: bridgeserver2-db-prod
+parameters:
+  DatabaseBackupRetentionDays: 30
+  DatabaseInstanceType: db.t2.medium
+  HibernateConnectionPassword: !ssm /bridgeserver2-prod/HibernateConnectionPassword
+  HibernateConnectionUsername: !ssm /bridgeserver2-prod/HibernateConnectionUsername

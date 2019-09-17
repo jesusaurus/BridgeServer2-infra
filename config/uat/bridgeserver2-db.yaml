@@ -1,0 +1,5 @@
+template_path: bridgeserver2-db.yaml
+stack_name: bridgeserver2-db-uat
+parameters:
+  HibernateConnectionPassword: !ssm /bridgeserver2-uat/HibernateConnectionPassword
+  HibernateConnectionUsername: !ssm /bridgeserver2-uat/HibernateConnectionUsername

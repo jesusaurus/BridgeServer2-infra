@@ -1,5 +1,7 @@
 template_path: bridgeserver2.yaml
 stack_name: bridgeserver2-prod
+depedencies:
+  - prod/bridgeserver2-db
 parameters:
   AppDeployBucket: org-sagebridge-bridgeserver2-deployment-prod
   AppHealthcheckUrl: '/'
@@ -18,10 +20,9 @@ parameters:
   AwsSnsBounceNotificationEndpoint: bridge-bounce-notifications@sagebase.org
   AwsSnsNotificationEndpoint: bridgeops@sagebase.org
   BridgeEnv: prod
+  BridgeDBStackName: bridgeserver2-db-prod
   BridgeHealthcodeRedisKey: !ssm /bridgeserver2-prod/BridgeHealthcodeRedisKey
   BridgeUser: heroku
-  DatabaseBackupRetentionDays: 30
-  DatabaseInstanceType: db.t2.medium
   DNSHostname: bridgeserver2-prod
   DNSDomain: sagebridge.org
   EC2InstanceType: t2.medium
