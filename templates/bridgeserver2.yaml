@@ -100,6 +100,7 @@ Parameters:
     Type: String
   HibernateConnectionUsername:
     Type: String
+    NoEcho: true
   HibernateConnectionUsessl:
     Type: String
     Default: true
@@ -427,12 +428,12 @@ Resources:
       FromPort: 3306
       ToPort: 3306
       SourceSecurityGroupId:
-        Fn::ImportValue: !Sub "us-east-1-${BridgeDBStackName}-RdsNewVpcSecurityGroup"
+        Fn::ImportValue: !Sub "${AWS::Region}-${BridgeDBStackName}-RdsNewVpcSecurityGroup"
   RdsOldToNewSecurityGroupIngress:
     Type: 'AWS::EC2::SecurityGroupIngress'
     Properties:
       GroupId:
-        Fn::ImportValue: !Sub "us-east-1-${BridgeDBStackName}-RdsNewVpcSecurityGroup"
+        Fn::ImportValue: !Sub "${AWS::Region}-${BridgeDBStackName}-RdsNewVpcSecurityGroup"
       IpProtocol: tcp
       FromPort: 3306
       ToPort: 3306
@@ -455,7 +456,7 @@ Resources:
     Type: 'AWS::EC2::SecurityGroupIngress'
     Properties:
       GroupId:
-        Fn::ImportValue: !Sub "us-east-1-${BridgeDBStackName}-RdsNewVpcSecurityGroup"
+        Fn::ImportValue: !Sub "${AWS::Region}-${BridgeDBStackName}-RdsNewVpcSecurityGroup"
       IpProtocol: tcp
       FromPort: 3306
       ToPort: 3306

@@ -1,4 +1,4 @@
-Description: Common resources for all stacks of BridgeServer2 Application
+Description: Common resources for BridgeServer2 databases
 AWSTemplateFormatVersion: 2010-09-09
 Resources:
   DBSubnetGroup:

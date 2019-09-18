@@ -1,5 +1,7 @@
 template_path: bridgeserver2-db.yaml
 stack_name: bridgeserver2-db-develop
+depedencies:
+  - common/bridgeserver2-common-db.yaml
 parameters:
   HibernateConnectionPassword: !ssm /bridgeserver2-develop/HibernateConnectionPassword
   HibernateConnectionUsername: !ssm /bridgeserver2-develop/HibernateConnectionUsername
