@@ -2,7 +2,6 @@ template_path: bridgeserver2.yaml
 stack_name: bridgeserver2-develop
 depedencies:
   - common/bridgeserver2-common.yaml
-  - common/bridgeserver2-common-db.yaml
   - develop/bridgeserver2-db.yaml
 parameters:
   AppDeployBucket: org-sagebridge-bridgeserver2-deployment-develop
