@@ -1,5 +1,8 @@
 template_path: bridgeserver2.yaml
 stack_name: bridgeserver2-uat
+depedencies:
+  - common/bridgeserver2-common.yaml
+  - uat/bridgeserver2-db.yaml
 parameters:
   AppDeployBucket: org-sagebridge-bridgeserver2-deployment-uat
   AppHealthcheckUrl: '/'
@@ -18,6 +21,7 @@ parameters:
   AwsSnsBounceNotificationEndpoint: bridgepf-uat-bounce-notifications@sagebase.org
   AwsSnsNotificationEndpoint: bridgepf-uat@sagebase.org
   BridgeEnv: uat
+  BridgeDBStackName: bridgeserver2-db-uat
   BridgeHealthcodeRedisKey: !ssm /bridgeserver2-uat/BridgeHealthcodeRedisKey
   BridgeUser: heroku
   DNSHostname: bridgeserver2-uat

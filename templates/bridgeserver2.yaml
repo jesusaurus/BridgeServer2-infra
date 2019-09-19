@@ -55,6 +55,9 @@ Parameters:
       - uat
       - dev
     ConstraintDescription: must specify dev, uat or prod.
+  BridgeDBStackName:
+    Type: String
+    Description: Name of the corresponding DB stack. Used to import DB information (security groups, endpoints)
   BridgeHealthcodeRedisKey:
     Type: String
     NoEcho: true
@@ -97,6 +100,7 @@ Parameters:
     Type: String
   HibernateConnectionUsername:
     Type: String
+    NoEcho: true
   HibernateConnectionUsessl:
     Type: String
     Default: true
@@ -423,24 +427,13 @@ Resources:
       IpProtocol: tcp
       FromPort: 3306
       ToPort: 3306
-      SourceSecurityGroupId: !Ref RdsNewVpcSecurityGroup
-  RdsNewVpcSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupDescription: !Join
-        - '-'
-        - - !Ref 'AWS::StackName'
-          - RdsNewVpcSecurityGroup
-      VpcId: !ImportValue us-east-1-BridgeServer2-vpc-VPCId
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          SourceSecurityGroupId: !Ref AWSEC2SecurityGroup
+      SourceSecurityGroupId:
+        Fn::ImportValue: !Sub "${AWS::Region}-${BridgeDBStackName}-RdsNewVpcSecurityGroup"
   RdsOldToNewSecurityGroupIngress:
     Type: 'AWS::EC2::SecurityGroupIngress'
     Properties:
-      GroupId: !Ref RdsNewVpcSecurityGroup
+      GroupId:
+        Fn::ImportValue: !Sub "${AWS::Region}-${BridgeDBStackName}-RdsNewVpcSecurityGroup"
       IpProtocol: tcp
       FromPort: 3306
       ToPort: 3306
@@ -459,6 +452,15 @@ Resources:
           FromPort: 80
           ToPort: 80
           SourceSecurityGroupId: !Ref AWSLBSecurityGroup
+  AWSEC2ToRdsNewSecurityGroupIngress:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId:
+        Fn::ImportValue: !Sub "${AWS::Region}-${BridgeDBStackName}-RdsNewVpcSecurityGroup"
+      IpProtocol: tcp
+      FromPort: 3306
+      ToPort: 3306
+      SourceSecurityGroupId: !Ref AWSEC2SecurityGroup
   AWSLBSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
