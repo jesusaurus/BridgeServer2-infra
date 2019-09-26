@@ -30,7 +30,6 @@ parameters:
   EmailUnsubscribeToken: !ssm /bridgeserver2-common/EmailUnsubscribeToken
   Env: develop
   HibernateConnectionPassword: !ssm /bridgeserver2-develop/HibernateConnectionPassword
-  HibernateConnectionUrl: !ssm /bridgeserver2-develop/HibernateConnectionUrl
   HibernateConnectionUsername: !ssm /bridgeserver2-develop/HibernateConnectionUsername
   HibernateConnectionUsessl: 'true'
   NewRelicAppName: bridgeserver2-develop

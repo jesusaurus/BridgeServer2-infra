@@ -30,7 +30,6 @@ parameters:
   EmailUnsubscribeToken: !ssm /bridgeserver2-common/EmailUnsubscribeToken
   Env: staging
   HibernateConnectionPassword: !ssm /bridgeserver2-uat/HibernateConnectionPassword
-  HibernateConnectionUrl: !ssm /bridgeserver2-uat/HibernateConnectionUrl
   HibernateConnectionUsername: !ssm /bridgeserver2-uat/HibernateConnectionUsername
   HibernateConnectionUsessl: 'true'
   NewRelicAppName: bridgeserver2-uat
