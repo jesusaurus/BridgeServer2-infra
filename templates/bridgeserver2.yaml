@@ -96,8 +96,6 @@ Parameters:
   HibernateConnectionPassword:
     Type: String
     NoEcho: true
-  HibernateConnectionUrl:
-    Type: String
   HibernateConnectionUsername:
     Type: String
     NoEcho: true
@@ -334,7 +332,11 @@ Resources:
           Value: !Ref HibernateConnectionPassword
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: hibernate.connection.url
-          Value: !Ref HibernateConnectionUrl
+          Value: !Join
+            - ''
+            - - 'jdbc:mysql://'
+              - Fn::ImportValue: !Sub "${AWS::Region}-${BridgeDBStackName}-DatabaseEndpointAddress"
+              - ':3306/BridgeDB'
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: hibernate.connection.username
           Value: !Ref HibernateConnectionUsername
