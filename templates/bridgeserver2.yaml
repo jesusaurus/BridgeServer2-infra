@@ -408,38 +408,6 @@ Resources:
       VpcSecurityGroupIds:
         - !GetAtt ElasticacheSecurityGroup.GroupId
       CacheSubnetGroupName: !Ref ElasticacheSubnetGroup
-  AWSEC2RdsSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupDescription: !Join
-        - '-'
-        - - !Ref 'AWS::StackName'
-          - AWSEC2RdsSecurityGroup
-      # RDS lives in a different VPC (for now)
-      VpcId: 'vpc-9c70bbf9'
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          SourceSecurityGroupId: !Ref AWSEC2SecurityGroup
-  RdsNewToOldSecurityGroupIngress:
-    Type: 'AWS::EC2::SecurityGroupIngress'
-    Properties:
-      GroupId: !Ref AWSEC2RdsSecurityGroup
-      IpProtocol: tcp
-      FromPort: 3306
-      ToPort: 3306
-      SourceSecurityGroupId:
-        Fn::ImportValue: !Sub "${AWS::Region}-${BridgeDBStackName}-RdsNewVpcSecurityGroup"
-  RdsOldToNewSecurityGroupIngress:
-    Type: 'AWS::EC2::SecurityGroupIngress'
-    Properties:
-      GroupId:
-        Fn::ImportValue: !Sub "${AWS::Region}-${BridgeDBStackName}-RdsNewVpcSecurityGroup"
-      IpProtocol: tcp
-      FromPort: 3306
-      ToPort: 3306
-      SourceSecurityGroupId: !Ref AWSEC2RdsSecurityGroup
   AWSEC2SecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
