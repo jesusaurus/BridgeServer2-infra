@@ -136,6 +136,13 @@ Parameters:
     NoEcho: true
   SynapseUser:
     Type: String
+  SynapseOAuthClientId:
+    Type: String
+    Description: The OAuth client registered with Synapse that enables BSM sign in via Synapse
+  SynapseOAuthClientSecret:
+    Type: String
+    NoEcho: true
+    Description: The OAuth client registered with Synapse that enables BSM sign in via Synapse
 Conditions:
   CreateDevResources: !Equals [ !Ref BridgeEnv, dev ]
 Resources:
@@ -361,6 +368,12 @@ Resources:
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: synapse.user
           Value: !Ref SynapseUser
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: synapse.oauth.client.id
+          Value: !Ref SynapseOAuthClientId
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: synapse.oauth.client.secret
+          Value: !Ref SynapseOAuthClientSecret
   AWSEBEnvironment:
     Type: 'AWS::ElasticBeanstalk::Environment'
     Properties:

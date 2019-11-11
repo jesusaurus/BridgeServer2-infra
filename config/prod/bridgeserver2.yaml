@@ -38,3 +38,5 @@ parameters:
   SnsSecretKey: !ssm /bridgeserver2-prod/SnsSecretKey
   SynapseApiKey: !ssm /bridgeserver2-prod/SynapseApiKey
   SynapseUser: !ssm /bridgeserver2-prod/SynapseUser
+  SynapseOAuthClientId: !ssm /bridgeserver2-prod/SynapseOAuthClientId
+  SynapseOAuthClientSecret: !ssm /bridgeserver2-prod/SynapseOAuthClientSecret
