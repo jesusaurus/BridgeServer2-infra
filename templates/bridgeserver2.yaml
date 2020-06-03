@@ -335,6 +335,12 @@ Resources:
           OptionName: email.unsubscribe.token
           Value: !Ref EmailUnsubscribeToken
         - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: health.data.bucket.processed
+          Value: !Ref ProcessedHealthDataBucket
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: health.data.bucket.raw
+          Value: !Ref RawHealthDataBucket
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: hibernate.connection.password
           Value: !Ref HibernateConnectionPassword
         - Namespace: 'aws:elasticbeanstalk:application:environment'
@@ -469,6 +475,12 @@ Resources:
       BucketName: !Ref AppDeployBucket
   AWSR53RecordSet:
     Type: 'AWS::Route53::RecordSet'
+    # This check is bugged. See https://github.com/aws-cloudformation/cfn-python-lint/issues/1425
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3012
     Properties:
       HostedZoneName: !Join
         - ''
@@ -768,6 +780,13 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
+      CorsConfiguration:
+        CorsRules:
+          - Id: SynapseCORSRule
+            AllowedHeaders: ['*']
+            AllowedOrigins: ['*']
+            AllowedMethods: [GET, POST, PUT, HEAD]
+            MaxAge: 3000
   RawHealthDataBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -806,6 +825,13 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
+      CorsConfiguration:
+        CorsRules:
+          - Id: SynapseCORSRule
+            AllowedHeaders: ['*']
+            AllowedOrigins: ['*']
+            AllowedMethods: [GET, POST, PUT, HEAD]
+            MaxAge: 3000
   ProcessedHealthDataBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
