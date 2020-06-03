@@ -759,6 +759,83 @@ Resources:
       Period: 300
       Statistic: Average
       Threshold: 1
+  # Bucket for raw health data. Grant Synapse read-only permissions to this bucket. Only Bridge can
+  # write to thise bucket.
+  RawHealthDataBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+  RawHealthDataBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: RawHealthDataBucket
+      PolicyDocument:
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              AWS: "arn:aws:iam::325565585839:root"
+            Action:
+              - "s3:ListBucket*"
+              - "s3:GetBucketLocation"
+            Resource:
+              - !Join
+                - ""
+                - - "arn:aws:s3:::"
+                  - !Ref RawHealthDataBucket
+          - Effect: "Allow"
+            Principal:
+              AWS: "arn:aws:iam::325565585839:root"
+            Action:
+              - "s3:GetObject*"
+              - "s3:*MultipartUpload*"
+            Resource:
+              - !Join
+                - ""
+                - - "arn:aws:s3:::"
+                  - !Ref RawHealthDataBucket
+                  - "/*"
+  # Bucket for processed health data. Grant Synapse read-write permissions to this bucket.
+  ProcessedHealthDataBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+  ProcessedHealthDataBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: ProcessedHealthDataBucket
+      PolicyDocument:
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              AWS: "arn:aws:iam::325565585839:root"
+            Action:
+              - "s3:ListBucket*"
+              - "s3:GetBucketLocation"
+            Resource:
+              - !Join
+                - ""
+                - - "arn:aws:s3:::"
+                  - !Ref ProcessedHealthDataBucket
+          - Effect: "Allow"
+            Principal:
+              AWS: "arn:aws:iam::325565585839:root"
+            Action:
+              - "s3:*Object*"
+              - "s3:*MultipartUpload*"
+            Resource:
+              - !Join
+                - ""
+                - - "arn:aws:s3:::"
+                  - !Ref ProcessedHealthDataBucket
+                  - "/*"
   IAMBridgeServer2ECManagedPolicy:
     Type: 'AWS::IAM::ManagedPolicy'
     Properties:
