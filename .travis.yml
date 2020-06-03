@@ -20,7 +20,7 @@ stages:
 jobs:
   include:
     - stage: validate
-      script: cfn-lint ./templates/**/*
+      script: cfn-lint -i E3012 -- ./templates/**/*
     - stage: deploy
       script:
         - sceptre launch common --yes
