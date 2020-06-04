@@ -787,6 +787,8 @@ Resources:
             AllowedOrigins: ['*']
             AllowedMethods: [GET, POST, PUT, HEAD]
             MaxAge: 3000
+      VersioningConfiguration:
+        Status: Enabled
   RawHealthDataBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -832,6 +834,8 @@ Resources:
             AllowedOrigins: ['*']
             AllowedMethods: [GET, POST, PUT, HEAD]
             MaxAge: 3000
+      VersioningConfiguration:
+        Status: Enabled
   ProcessedHealthDataBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
