@@ -380,6 +380,9 @@ Resources:
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: synapse.oauth.client.secret
           Value: !Ref SynapseOAuthClientSecret
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: crc.geocode.api.key
+          Value: !Ref CrcGeoCodeApiKey
   AWSEBEnvironment:
     Type: 'AWS::ElasticBeanstalk::Environment'
     Properties:
