@@ -40,3 +40,4 @@ parameters:
   SynapseUser: !ssm /bridgeserver2-prod/SynapseUser
   SynapseOAuthClientId: !ssm /bridgeserver2-prod/SynapseOAuthClientId
   SynapseOAuthClientSecret: !ssm /bridgeserver2-prod/SynapseOAuthClientSecret
+  CrcGeoCodeApiKey: !ssm /bridgeserver2-prod/CrcGeoCodeApiKey
