@@ -64,6 +64,9 @@ Parameters:
   BridgeUser:
     Type: String
     Default: heroku
+  CrcGeoCodeApiKey:
+    Type: String
+    NoEcho: true
   DNSDomain:
     Type: String
     Description: DNS Domain name for deployment
