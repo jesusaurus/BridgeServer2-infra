@@ -41,7 +41,7 @@ parameters:
   SynapseOAuthClientId: !ssm /bridgeserver2-uat/SynapseOAuthClientId
   SynapseOAuthClientSecret: !ssm /bridgeserver2-uat/SynapseOAuthClientSecret
   CrcGeoCodeApiKey: !ssm /bridgeserver2-uat/CrcGeoCodeApiKey
-  CuimcTestUsername: !ssm/bridgeserver2-uat/CuimcTestUsername
-  CuimcTestPassword: !ssm/bridgeserver2-uat/CuimcTestPassword
-  CuimcProdUsername: !ssm/bridgeserver2-uat/CuimcProdUsername
-  CuimcProdPassword: !ssm/bridgeserver2-aut/CuimcProdPassword
+  CuimcTestUsername: !ssm/bridgeserver2-common/CuimcTestUsername
+  CuimcTestPassword: !ssm/bridgeserver2-common/CuimcTestPassword
+  CuimcProdUsername: !ssm/bridgeserver2-common/CuimcProdUsername
+  CuimcProdPassword: !ssm/bridgeserver2-common/CuimcProdPassword
