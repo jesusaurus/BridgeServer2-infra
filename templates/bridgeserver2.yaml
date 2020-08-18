@@ -67,6 +67,18 @@ Parameters:
   CrcGeoCodeApiKey:
     Type: String
     NoEcho: true
+  CuimcTestUsername:
+    Type: String
+    NoEcho: true
+  CuimcTestPassword:
+    Type: String
+    NoEcho: true
+  CuimcProdUsername:
+    Type: String
+    NoEcho: true
+  CuimcProdPassword:
+    Type: String
+    NoEcho: true
   DNSDomain:
     Type: String
     Description: DNS Domain name for deployment
@@ -386,6 +398,18 @@ Resources:
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: crc.geocode.api.key
           Value: !Ref CrcGeoCodeApiKey
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: cuimc.test.username
+          Value: !Ref CuimcTestUsername
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: cuimc.test.password
+          Value: !Ref CuimcTestPassword
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: cuimc.prod.username
+          Value: !Ref CuimcProdUsername
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: cuimc.prod.password
+          Value: !Ref CuimcProdPassword
   AWSEBEnvironment:
     Type: 'AWS::ElasticBeanstalk::Environment'
     Properties:
