@@ -959,8 +959,8 @@ Resources:
     Type: 'AWS::IAM::AccessKey'
     Condition: CreateDevResources
     Properties:
-      UserName: !Ref AWSIAMBridgeServer2LocalServiceUser
-  AWSIAMBridgeServer2LocalServiceUser:
+      UserName: !Ref AWSIAMBridgeServer2LocalServiceUser2
+  AWSIAMBridgeServer2LocalServiceUser2:
     Type: 'AWS::IAM::User'
     Condition: CreateDevResources
     Properties:
