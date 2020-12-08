@@ -10,14 +10,6 @@ parameters:
   AwsAutoScalingMaxSize: '1'
   AwsAutoScalingMinSize: '1'
   AwsEbHealthReportingSystem: enhanced
-  AwsKey: !ssm /bridgeserver2-uat/AwsKey
-  AwsKeyConsents: !ssm /bridgeserver2-uat/AwsKeyConsents
-  AwsKeyUpload: !ssm /bridgeserver2-uat/AwsKeyUpload
-  AwsKeyUploadCms: !ssm /bridgeserver2-uat/AwsKeyUploadCms
-  AwsSecretKey: !ssm /bridgeserver2-uat/AwsSecretKey
-  AwsSecretKeyConsents: !ssm /bridgeserver2-uat/AwsSecretKeyConsents
-  AwsSecretKeyUpload: !ssm /bridgeserver2-uat/AwsSecretKeyUpload
-  AwsSecretKeyUploadCms: !ssm /bridgeserver2-uat/AwsSecretKeyUploadCms
   AwsSnsBounceNotificationEndpoint: bridgepf-uat-bounce-notifications@sagebase.org
   AwsSnsNotificationEndpoint: bridgepf-uat@sagebase.org
   BridgeEnv: uat
@@ -34,8 +26,6 @@ parameters:
   HibernateConnectionUsessl: 'true'
   NewRelicAppName: bridgeserver2-uat
   NewRelicLicenseKey: !ssm /infra/NewRelicLicenseKey
-  SnsKey: !ssm /bridgeserver2-uat/SnsKey
-  SnsSecretKey: !ssm /bridgeserver2-uat/SnsSecretKey
   SynapseApiKey: !ssm /bridgeserver2-uat/SynapseApiKey
   SynapseUser: !ssm /bridgeserver2-uat/SynapseUser
   SynapseOAuthClientId: !ssm /bridgeserver2-uat/SynapseOAuthClientId
