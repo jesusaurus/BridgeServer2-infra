@@ -21,26 +21,6 @@ Parameters:
       - basic
       - enhanced
     ConstraintDescription: must be either basic or enhanced
-  AwsKey:
-    Type: String
-  AwsKeyConsents:
-    Type: String
-  AwsKeyUpload:
-    Type: String
-  AwsKeyUploadCms:
-    Type: String
-  AwsSecretKey:
-    Type: String
-    NoEcho: true
-  AwsSecretKeyConsents:
-    Type: String
-    NoEcho: true
-  AwsSecretKeyUpload:
-    Type: String
-    NoEcho: true
-  AwsSecretKeyUploadCms:
-    Type: String
-    NoEcho: true
   AwsSnsBounceNotificationEndpoint:
     Type: String
     Description: Email address for SNS bounce notifications
@@ -141,11 +121,6 @@ Parameters:
       - Rolling
       - RollingWithAdditionalBatch
       - Immutable
-  SnsKey:
-    Type: String
-  SnsSecretKey:
-    Type: String
-    NoEcho: true
   SynapseApiKey:
     Type: String
     NoEcho: true
@@ -296,28 +271,28 @@ Resources:
         # Application environment options
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: aws.key
-          Value: !Ref AwsKey
+          Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: aws.key.consents
-          Value: !Ref AwsKeyConsents
+          Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: aws.key.upload
-          Value: !Ref AwsKeyUpload
+          Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: aws.key.upload.cms
-          Value: !Ref AwsKeyUploadCms
+          Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: aws.secret.key
-          Value: !Ref AwsSecretKey
+          Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: aws.secret.key.consents
-          Value: !Ref AwsSecretKeyConsents
+          Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: aws.secret.key.upload
-          Value: !Ref AwsSecretKeyUpload
+          Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: aws.secret.key.upload.cms
-          Value: !Ref AwsSecretKeyUploadCms
+          Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: ENV
           Value: !Ref Env
@@ -379,10 +354,10 @@ Resources:
           Value: !Ref NewRelicLicenseKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: sns.key
-          Value: !Ref SnsKey
+          Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: sns.secret.key
-          Value: !Ref SnsSecretKey
+          Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: synapse.api.key
           Value: !Ref SynapseApiKey
@@ -937,8 +912,8 @@ Resources:
   AWSIAMBridgeServer2ServiceUserAccessKey:
     Type: 'AWS::IAM::AccessKey'
     Properties:
-      UserName: !Ref AWSIAMBridgeServer2ServiceUser
-  AWSIAMBridgeServer2ServiceUser:
+      UserName: !Ref AWSIAMBridgeServer2ServiceUser2
+  AWSIAMBridgeServer2ServiceUser2:
     Type: 'AWS::IAM::User'
     Properties:
       Groups:
@@ -1020,7 +995,7 @@ Resources:
                     - !Ref AWS::AccountId
                     - ':root'
                 - !ImportValue us-east-1-bootstrap-CfServiceRoleArn
-                - !GetAtt AWSIAMBridgeServer2ServiceUser.Arn
+                - !GetAtt AWSIAMBridgeServer2ServiceUser2.Arn
                 - !ImportValue us-east-1-bridgeserver2-common-BeanstalkServiceRoleArn
             Action:
               - "kms:Encrypt"
