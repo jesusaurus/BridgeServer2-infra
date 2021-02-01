@@ -391,8 +391,6 @@ Resources:
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: gbf.api.key
           Value: !Ref GbfApiKey
-     Type: String
-     NoEcho: true
   AWSEBEnvironment:
     Type: 'AWS::ElasticBeanstalk::Environment'
     Properties:
