@@ -64,6 +64,9 @@ Parameters:
   CrcGeoCodeApiKey:
     Type: String
     NoEcho: true
+  GbfApiKey:
+    Type: String
+    NoEcho: true
   CuimcTestUsername:
     Type: String
     NoEcho: true
@@ -512,6 +515,9 @@ Resources:
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: cuimc.prod.password
           Value: !Ref CuimcProdPassword
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: gbf.api.key
+          Value: !Ref GbfApiKey
   AWSEBEnvironment:
     Type: 'AWS::ElasticBeanstalk::Environment'
     Properties:

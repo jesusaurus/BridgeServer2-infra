@@ -52,3 +52,4 @@ parameters:
   CuimcTestPassword: !ssm /bridgeserver2-common/CuimcTestPassword
   CuimcProdUsername: !ssm /bridgeserver2-common/CuimcProdUsername
   CuimcProdPassword: !ssm /bridgeserver2-common/CuimcProdPassword
+  GbfApiKey: !ssm /bridgeserver2-common/GbfApiKey
