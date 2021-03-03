@@ -59,7 +59,7 @@ Parameters:
   BridgeUser:
     Type: String
     Default: heroku
-  ConsentsBucket:
+  BucketSuffix:
     Type: String
   CrcGeoCodeApiKey:
     Type: String
@@ -130,8 +130,6 @@ Parameters:
   NewRelicLicenseKey:
     Type: String
     NoEcho: true
-  ParticipantFileBucket:
-    Type: String
   RollingUpdateType:
     Type: String
     Default: Time
@@ -163,12 +161,6 @@ Parameters:
     Description: The OAuth client registered with Synapse that enables BSM sign in via Synapse
   UddSqsQueueUrl:
     Type: String
-  UploadBucket:
-    Type: String
-  UploadCmsCertBucket:
-    Type: String
-  UploadCmsPrivBucket:
-    Type: String
   UseHttpsForwarding:
     Type: String
     Default: true
@@ -176,8 +168,6 @@ Parameters:
       - true
       - false
     ConstraintDescription: must be either true or false
-  UsersignedConsentsBucket:
-    Type: String
 Conditions:
   CreateDevResources: !Equals [ !Ref BridgeEnv, dev ]
   CreateR53Record: !Equals [ !Ref BridgeEnv, prod ]
@@ -316,34 +306,10 @@ Resources:
           Value: !ImportValue us-east-1-bridgeserver2-common-SSLCertificate
         # Application environment options
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: !Join
-            - ''
-            - - !Ref BridgeEnv
-              - '.attachment.bucket'
-          Value: !Ref AttachmentBucket
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: aws.key
           Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: aws.key.consents
-          Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: aws.key.upload
-          Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: aws.key.upload.cms
-          Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: aws.secret.key
-          Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: aws.secret.key.consents
-          Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: aws.secret.key.upload
-          Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: aws.secret.key.upload.cms
           Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: admin.email
@@ -376,12 +342,6 @@ Resources:
           OptionName: bridge.user
           Value: !Ref BridgeUser
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: !Join
-            - ''
-            - - !Ref BridgeEnv
-              - '.consents.bucket'
-          Value: !Ref ConsentsBucket
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: elasticache.new.url
           Value: !Join
             - ''
@@ -401,11 +361,14 @@ Resources:
           OptionName: email.unsubscribe.token
           Value: !Ref EmailUnsubscribeToken
         - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: exporter.request.sqs.queue.url
+          Value: !Ref ExporterRequestSqsQueueUrl
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: !Join
             - ''
             - - !Ref BridgeEnv
-              - '.exporter.request.sqs.queue.url'
-          Value: !Ref ExporterRequestSqsQueueUrl
+              - '.bucket.suffix'
+          Value: !Ref BucketSuffix
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: health.data.bucket.processed
           Value: !Ref ProcessedHealthDataBucket
@@ -441,20 +404,8 @@ Resources:
           OptionName: NEW_RELIC_LICENSE_KEY
           Value: !Ref NewRelicLicenseKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: !Join
-            - ''
-            - - !Ref BridgeEnv
-              - '.host.participant-file.bucket'
-          Value: !Ref ParticipantFileBucket
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: ses.notification.topic.arn
           Value: !Ref SesNotificationTopicArn
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: sns.key
-          Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: sns.secret.key
-          Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: synapse.api.key
           Value: !Ref SynapseApiKey
@@ -468,38 +419,11 @@ Resources:
           OptionName: synapse.oauth.client.secret
           Value: !Ref SynapseOAuthClientSecret
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: !Join
-            - ''
-            - - !Ref BridgeEnv
-              - '.udd.sqs.queue.url'
+          OptionName: udd.sqs.queue.url
           Value: !Ref UddSqsQueueUrl
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: !Join
-            - ''
-            - - !Ref BridgeEnv
-              - '.upload.bucket'
-          Value: !Ref UploadBucket
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: !Join
-            - ''
-            - - !Ref BridgeEnv
-              - '.upload.cms.cert.bucket'
-          Value: !Ref UploadCmsCertBucket
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: !Join
-            - ''
-            - - !Ref BridgeEnv
-              - '.upload.cms.priv.bucket'
-          Value: !Ref UploadCmsPrivBucket
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: use.https.forwarding
           Value: !Ref UseHttpsForwarding
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: !Join
-            - ''
-            - - !Ref BridgeEnv
-              - '.usersigned.consents.bucket'
-          Value: !Ref UsersignedConsentsBucket
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: crc.geocode.api.key
           Value: !Ref CrcGeoCodeApiKey

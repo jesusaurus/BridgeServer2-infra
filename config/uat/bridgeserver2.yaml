@@ -22,7 +22,7 @@ parameters:
   BridgeDBStackName: bridgeserver2-db-uat
   BridgeHealthcodeRedisKey: !ssm /bridgeserver2-uat/BridgeHealthcodeRedisKey
   BridgeUser: heroku
-  ConsentsBucket: org-sagebridge-consents-devstaging
+  BucketSuffix: devstaging
   DNSHostname: bridgeserver2-devstaging
   DNSDomain: sagebridge.org
   EC2InstanceType: t2.small
@@ -35,18 +35,13 @@ parameters:
   HostPostfix: -devstaging.sagebridge.org
   NewRelicAppName: bridgeserver2-devstaging
   NewRelicLicenseKey: !ssm /infra/NewRelicLicenseKey
-  ParticipantFileBucket: org-sagebridge-participantfile-devstaging
   SesNotificationTopicArn: arn:aws:sns:us-east-1:420786776710:SNSBounces
   SynapseApiKey: !ssm /bridgeserver2-uat/SynapseApiKey
   SynapseUser: !ssm /bridgeserver2-uat/SynapseUser
   SynapseOAuthClientId: !ssm /bridgeserver2-uat/SynapseOAuthClientId
   SynapseOAuthClientSecret: !ssm /bridgeserver2-uat/SynapseOAuthClientSecret
   UddSqsQueueUrl: https://sqs.us-east-1.amazonaws.com/420786776710/Bridge-WorkerPlatform-Request-staging
-  UploadBucket: org-sagebridge-upload-devstaging
-  UploadCmsCertBucket: org-sagebridge-upload-cms-cert-devstaging
-  UploadCmsPrivBucket: org-sagebridge-upload-cms-priv-devstaging
-  UseHttpsForwarding: false
-  UsersignedConsentsBucket: org-sagebridge-usersigned-consents-devstaging
+  UseHttpsForwarding: 'false'
   CrcGeoCodeApiKey: !ssm /bridgeserver2-uat/CrcGeoCodeApiKey
   CuimcTestUsername: !ssm /bridgeserver2-common/CuimcTestUsername
   CuimcTestPassword: !ssm /bridgeserver2-common/CuimcTestPassword

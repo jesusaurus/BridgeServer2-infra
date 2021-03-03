@@ -22,7 +22,7 @@ parameters:
   BridgeDBStackName: bridgeserver2-db-develop
   BridgeHealthcodeRedisKey: !ssm /bridgeserver2-develop/BridgeHealthcodeRedisKey
   BridgeUser: heroku
-  ConsentsBucket: org-sagebridge-consents-devdevelop
+  BucketSuffix: devdevelop
   DNSHostname: bridgeserver2-devdevelop
   DNSDomain: sagebridge.org
   EC2InstanceType: t2.small
@@ -35,18 +35,13 @@ parameters:
   HostPostfix: -devdevelop.sagebridge.org
   NewRelicAppName: bridgeserver2-devdevelop
   NewRelicLicenseKey: !ssm /infra/NewRelicLicenseKey
-  ParticipantFileBucket: org-sagebridge-participantfile-devdevelop
   SesNotificationTopicArn: arn:aws:sns:us-east-1:420786776710:SNSBounces
   SynapseApiKey: !ssm /bridgeserver2-develop/SynapseApiKey
   SynapseUser: !ssm /bridgeserver2-develop/SynapseUser
   SynapseOAuthClientId: !ssm /bridgeserver2-develop/SynapseOAuthClientId
   SynapseOAuthClientSecret: !ssm /bridgeserver2-develop/SynapseOAuthClientSecret
   UddSqsQueueUrl: https://sqs.us-east-1.amazonaws.com/420786776710/Bridge-WorkerPlatform-Request-develop
-  UploadBucket: org-sagebridge-upload-devdevelop
-  UploadCmsCertBucket: org-sagebridge-upload-cms-cert-devdevelop
-  UploadCmsPrivBucket: org-sagebridge-upload-cms-priv-devdevelop
-  UseHttpsForwarding: false
-  UsersignedConsentsBucket: org-sagebridge-usersigned-consents-devdevelop
+  UseHttpsForwarding: 'false'
   CrcGeoCodeApiKey: !ssm /bridgeserver2-develop/CrcGeoCodeApiKey
   CuimcTestUsername: !ssm /bridgeserver2-common/CuimcTestUsername
   CuimcTestPassword: !ssm /bridgeserver2-common/CuimcTestPassword

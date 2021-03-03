@@ -22,7 +22,7 @@ parameters:
   BridgeDBStackName: bridgeserver2-db-prod
   BridgeHealthcodeRedisKey: !ssm /bridgeserver2-prod/BridgeHealthcodeRedisKey
   BridgeUser: heroku
-  ConsentsBucket: org-sagebridge-consents-prod
+  BucketSuffix: prod
   DNSHostname: bridgeserver2-prod
   DNSDomain: sagebridge.org
   EC2InstanceType: t2.medium
@@ -35,17 +35,12 @@ parameters:
   HostPostfix: .sagebridge.org
   NewRelicAppName: bridgeserver2-prod
   NewRelicLicenseKey: !ssm /infra/NewRelicLicenseKey
-  ParticipantFileBucket: org-sagebridge-participantfile-prod
   SesNotificationTopicArn: arn:aws:sns:us-east-1:649232250620:SNSBounces
   SynapseApiKey: !ssm /bridgeserver2-prod/SynapseApiKey
   SynapseUser: !ssm /bridgeserver2-prod/SynapseUser
   SynapseOAuthClientId: !ssm /bridgeserver2-prod/SynapseOAuthClientId
   SynapseOAuthClientSecret: !ssm /bridgeserver2-prod/SynapseOAuthClientSecret
   UddSqsQueueUrl: https://sqs.us-east-1.amazonaws.com/649232250620/Bridge-WorkerPlatform-Request-prod
-  UploadBucket: org-sagebridge-upload-prod
-  UploadCmsCertBucket: org-sagebridge-upload-cms-cert-prod
-  UploadCmsPrivBucket: org-sagebridge-upload-cms-priv-prod
-  UsersignedConsentsBucket: bridgepf-prod-awss3usersignedconsentsdownloadbuck-1slz1bcz0mls7
   CrcGeoCodeApiKey: !ssm /bridgeserver2-prod/CrcGeoCodeApiKey
   CuimcTestUsername: !ssm /bridgeserver2-common/CuimcTestUsername
   CuimcTestPassword: !ssm /bridgeserver2-common/CuimcTestPassword
