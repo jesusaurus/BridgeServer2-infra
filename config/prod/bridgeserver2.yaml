@@ -12,24 +12,35 @@ parameters:
   AwsEbHealthReportingSystem: enhanced
   AwsSnsBounceNotificationEndpoint: bridge-bounce-notifications@sagebase.org
   AwsSnsNotificationEndpoint: bridgeops@sagebase.org
+  BootstrapAdminEmail: !ssm /bridgeserver2-prod/BootstrapAdminEmail
+  BootstrapAdminPassword: !ssm /bridgeserver2-prod/BootstrapAdminPassword
+  BootstrapApiEmail: !ssm /bridgeserver2-prod/BootstrapApiEmail
+  BootstrapApiPassword: !ssm /bridgeserver2-prod/BootstrapApiPassword
+  BootstrapSharedEmail: !ssm /bridgeserver2-prod/BootstrapSharedEmail
+  BootstrapSharedPassword: !ssm /bridgeserver2-prod/BootstrapSharedPassword
   BridgeEnv: prod
   BridgeDBStackName: bridgeserver2-db-prod
   BridgeHealthcodeRedisKey: !ssm /bridgeserver2-prod/BridgeHealthcodeRedisKey
   BridgeUser: heroku
+  BucketSuffix: prod
   DNSHostname: bridgeserver2-prod
   DNSDomain: sagebridge.org
   EC2InstanceType: t2.medium
   EmailUnsubscribeToken: !ssm /bridgeserver2-common/EmailUnsubscribeToken
   Env: production
+  ExporterRequestSqsQueueUrl: https://sqs.us-east-1.amazonaws.com/649232250620/Bridge-EX-Request-prod
   HibernateConnectionPassword: !ssm /bridgeserver2-prod/HibernateConnectionPassword
   HibernateConnectionUsername: !ssm /bridgeserver2-prod/HibernateConnectionUsername
   HibernateConnectionUsessl: 'true'
+  HostPostfix: .sagebridge.org
   NewRelicAppName: bridgeserver2-prod
   NewRelicLicenseKey: !ssm /infra/NewRelicLicenseKey
+  SesNotificationTopicArn: arn:aws:sns:us-east-1:649232250620:SNSBounces
   SynapseApiKey: !ssm /bridgeserver2-prod/SynapseApiKey
   SynapseUser: !ssm /bridgeserver2-prod/SynapseUser
   SynapseOAuthClientId: !ssm /bridgeserver2-prod/SynapseOAuthClientId
   SynapseOAuthClientSecret: !ssm /bridgeserver2-prod/SynapseOAuthClientSecret
+  UddSqsQueueUrl: https://sqs.us-east-1.amazonaws.com/649232250620/Bridge-WorkerPlatform-Request-prod
   CrcGeoCodeApiKey: !ssm /bridgeserver2-prod/CrcGeoCodeApiKey
   CuimcTestUsername: !ssm /bridgeserver2-common/CuimcTestUsername
   CuimcTestPassword: !ssm /bridgeserver2-common/CuimcTestPassword

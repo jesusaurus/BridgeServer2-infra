@@ -27,6 +27,21 @@ Parameters:
   AwsSnsNotificationEndpoint:
     Type: String
     Description: Email address for AWS SNS notifications
+  BootstrapAdminEmail:
+    Type: String
+  BootstrapAdminPassword:
+    Type: String
+    NoEcho: true
+  BootstrapApiEmail:
+    Type: String
+  BootstrapApiPassword:
+    Type: String
+    NoEcho: true
+  BootstrapSharedEmail:
+    Type: String
+  BootstrapSharedPassword:
+    Type: String
+    NoEcho: true
   BridgeEnv:
     Type: String
     Default: dev
@@ -44,6 +59,8 @@ Parameters:
   BridgeUser:
     Type: String
     Default: heroku
+  BucketSuffix:
+    Type: String
   CrcGeoCodeApiKey:
     Type: String
     NoEcho: true
@@ -91,6 +108,8 @@ Parameters:
       - production
       - staging
       - develop
+  ExporterRequestSqsQueueUrl:
+    Type: String
   HibernateConnectionPassword:
     Type: String
     NoEcho: true
@@ -104,6 +123,8 @@ Parameters:
       - true
       - false
     ConstraintDescription: must be either true or false
+  HostPostfix:
+    Type: String
   NewRelicAppName:
     Type: String
   NewRelicLicenseKey:
@@ -124,6 +145,8 @@ Parameters:
       - Rolling
       - RollingWithAdditionalBatch
       - Immutable
+  SesNotificationTopicArn:
+    Type: String
   SynapseApiKey:
     Type: String
     NoEcho: true
@@ -136,8 +159,18 @@ Parameters:
     Type: String
     NoEcho: true
     Description: The OAuth client registered with Synapse that enables BSM sign in via Synapse
+  UddSqsQueueUrl:
+    Type: String
+  UseHttpsForwarding:
+    Type: String
+    Default: true
+    AllowedValues:
+      - true
+      - false
+    ConstraintDescription: must be either true or false
 Conditions:
   CreateDevResources: !Equals [ !Ref BridgeEnv, dev ]
+  CreateR53Record: !Equals [ !Ref BridgeEnv, prod ]
 Resources:
   LoadBalancerAccessLogsBucket:
     Type: 'AWS::S3::Bucket'
@@ -276,26 +309,26 @@ Resources:
           OptionName: aws.key
           Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: aws.key.consents
-          Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: aws.key.upload
-          Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: aws.key.upload.cms
-          Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: aws.secret.key
           Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: aws.secret.key.consents
-          Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
+          OptionName: admin.email
+          Value: !Ref BootstrapAdminEmail
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: aws.secret.key.upload
-          Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
+          OptionName: admin.password
+          Value: !Ref BootstrapAdminPassword
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: aws.secret.key.upload.cms
-          Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
+          OptionName: api.developer.email
+          Value: !Ref BootstrapApiEmail
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: api.developer.password
+          Value: !Ref BootstrapApiPassword
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: shared.developer.email
+          Value: !Ref BootstrapSharedEmail
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: shared.developer.password
+          Value: !Ref BootstrapSharedPassword
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: ENV
           Value: !Ref Env
@@ -328,6 +361,15 @@ Resources:
           OptionName: email.unsubscribe.token
           Value: !Ref EmailUnsubscribeToken
         - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: exporter.request.sqs.queue.url
+          Value: !Ref ExporterRequestSqsQueueUrl
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: !Join
+            - ''
+            - - !Ref BridgeEnv
+              - '.bucket.suffix'
+          Value: !Ref BucketSuffix
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: health.data.bucket.processed
           Value: !Ref ProcessedHealthDataBucket
         - Namespace: 'aws:elasticbeanstalk:application:environment'
@@ -350,17 +392,20 @@ Resources:
           OptionName: hibernate.connection.useSSL
           Value: !Ref HibernateConnectionUsessl
         - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: !Join
+            - ''
+            - - !Ref BridgeEnv
+              - '.host.postfix'
+          Value: !Ref HostPostfix
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: NEW_RELIC_APP_NAME
           Value: !Ref NewRelicAppName
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: NEW_RELIC_LICENSE_KEY
           Value: !Ref NewRelicLicenseKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: sns.key
-          Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: sns.secret.key
-          Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
+          OptionName: ses.notification.topic.arn
+          Value: !Ref SesNotificationTopicArn
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: synapse.api.key
           Value: !Ref SynapseApiKey
@@ -373,6 +418,12 @@ Resources:
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: synapse.oauth.client.secret
           Value: !Ref SynapseOAuthClientSecret
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: udd.sqs.queue.url
+          Value: !Ref UddSqsQueueUrl
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: use.https.forwarding
+          Value: !Ref UseHttpsForwarding
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: crc.geocode.api.key
           Value: !Ref CrcGeoCodeApiKey
@@ -492,6 +543,7 @@ Resources:
         config:
           ignore_checks:
             - E3012
+    Condition: CreateR53Record
     Properties:
       HostedZoneName: !Join
         - ''
@@ -512,6 +564,7 @@ Resources:
   AWSR53HealthCheck:
     Type: "AWS::Route53::HealthCheck"
     DependsOn: AWSR53RecordSet
+    Condition: CreateR53Record
     Properties:
       HealthCheckConfig:
         FullyQualifiedDomainName: !GetAtt AWSEBEnvironment.EndpointURL
@@ -767,6 +820,7 @@ Resources:
       Threshold: 20
   AWSCWHealthCheckStatusAlarm:
     Type: "AWS::CloudWatch::Alarm"
+    Condition: CreateR53Record
     Properties:
       ActionsEnabled: true
       AlarmActions:
