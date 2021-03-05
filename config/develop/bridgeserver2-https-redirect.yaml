@@ -1,6 +1,0 @@
-template_path: bridgeserver2-https-redirect.yaml
-stack_name: bridgeserver2-https-redirect-develop
-depedencies:
-  - develop/bridgeserver2.yaml
-parameters:
-  LoadBalancerArn: "arn:aws:elasticloadbalancing:us-east-1:649232250620:loadbalancer/app/awseb-AWSEB-10R081Z8BDQYB/dbd3eb5feb13b1e0"
