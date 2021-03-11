@@ -41,7 +41,6 @@ parameters:
   SynapseOAuthClientId: !ssm /bridgeserver2-uat/SynapseOAuthClientId
   SynapseOAuthClientSecret: !ssm /bridgeserver2-uat/SynapseOAuthClientSecret
   UddSqsQueueUrl: https://sqs.us-east-1.amazonaws.com/420786776710/Bridge-WorkerPlatform-Request-staging
-  UseHttpsForwarding: 'false'
   CrcGeoCodeApiKey: !ssm /bridgeserver2-uat/CrcGeoCodeApiKey
   CuimcTestUsername: !ssm /bridgeserver2-common/CuimcTestUsername
   CuimcTestPassword: !ssm /bridgeserver2-common/CuimcTestPassword
