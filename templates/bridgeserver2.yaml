@@ -304,6 +304,13 @@ Resources:
         - Namespace: 'aws:elbv2:listener:443'
           OptionName: SSLCertificateArns
           Value: !ImportValue us-east-1-bridgeserver2-common-SSLCertificate
+        # ELB cipher and TLS protocol versions
+        - Namespace: 'aws:elb:listener:443'
+          OptionName: PolicyNames
+          Value: TLSHighPolicy
+        - Namespace:  'aws:elb:policies:TLSHighPolicy'
+          OptionName: SSLReferencePolicy
+          Value: ELBSecurityPolicy-TLS-1-2-2017-01
         # Application environment options
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: aws.key
