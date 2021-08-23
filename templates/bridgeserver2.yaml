@@ -110,6 +110,11 @@ Parameters:
       - develop
   ExporterRequestSqsQueueUrl:
     Type: String
+  ExporterSynapseApiKey:
+    Type: String
+    NoEcho: true
+  ExporterSynapseUser:
+    Type: String
   HibernateConnectionPassword:
     Type: String
     NoEcho: true
@@ -371,17 +376,17 @@ Resources:
           OptionName: exporter.request.sqs.queue.url
           Value: !Ref ExporterRequestSqsQueueUrl
         - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: exporter.synapse.api.key
+          Value: !Ref ExporterSynapseApiKey
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: exporter.synapse.user
+          Value: !Ref ExporterSynapseUser
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: !Join
             - ''
             - - !Ref BridgeEnv
               - '.bucket.suffix'
           Value: !Ref BucketSuffix
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: health.data.bucket.processed
-          Value: !Ref ProcessedHealthDataBucket
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: health.data.bucket.raw
-          Value: !Ref RawHealthDataBucket
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: hibernate.connection.password
           Value: !Ref HibernateConnectionPassword
@@ -843,101 +848,6 @@ Resources:
       Period: 300
       Statistic: Average
       Threshold: 1
-  # Bucket for raw health data. Grant Synapse read-only permissions to this bucket. Only Bridge can
-  # write to thise bucket.
-  RawHealthDataBucket:
-    Type: 'AWS::S3::Bucket'
-    Properties:
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      CorsConfiguration:
-        CorsRules:
-          - Id: SynapseCORSRule
-            AllowedHeaders: ['*']
-            AllowedOrigins: ['*']
-            AllowedMethods: [GET, POST, PUT, HEAD]
-            MaxAge: 3000
-      VersioningConfiguration:
-        Status: Enabled
-  RawHealthDataBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket:
-        Ref: RawHealthDataBucket
-      PolicyDocument:
-        Statement:
-          - Effect: "Allow"
-            Principal:
-              AWS: "arn:aws:iam::325565585839:root"
-            Action:
-              - "s3:ListBucket*"
-              - "s3:GetBucketLocation"
-            Resource:
-              - !Join
-                - ""
-                - - "arn:aws:s3:::"
-                  - !Ref RawHealthDataBucket
-          - Effect: "Allow"
-            Principal:
-              AWS: "arn:aws:iam::325565585839:root"
-            Action:
-              - "s3:GetObject*"
-              - "s3:*MultipartUpload*"
-            Resource:
-              - !Join
-                - ""
-                - - "arn:aws:s3:::"
-                  - !Ref RawHealthDataBucket
-                  - "/*"
-  # Bucket for processed health data. Grant Synapse read-write permissions to this bucket.
-  ProcessedHealthDataBucket:
-    Type: 'AWS::S3::Bucket'
-    Properties:
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      CorsConfiguration:
-        CorsRules:
-          - Id: SynapseCORSRule
-            AllowedHeaders: ['*']
-            AllowedOrigins: ['*']
-            AllowedMethods: [GET, POST, PUT, HEAD]
-            MaxAge: 3000
-      VersioningConfiguration:
-        Status: Enabled
-  ProcessedHealthDataBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket:
-        Ref: ProcessedHealthDataBucket
-      PolicyDocument:
-        Statement:
-          - Effect: "Allow"
-            Principal:
-              AWS: "arn:aws:iam::325565585839:root"
-            Action:
-              - "s3:ListBucket*"
-              - "s3:GetBucketLocation"
-            Resource:
-              - !Join
-                - ""
-                - - "arn:aws:s3:::"
-                  - !Ref ProcessedHealthDataBucket
-          - Effect: "Allow"
-            Principal:
-              AWS: "arn:aws:iam::325565585839:root"
-            Action:
-              - "s3:*Object*"
-              - "s3:*MultipartUpload*"
-            Resource:
-              - !Join
-                - ""
-                - - "arn:aws:s3:::"
-                  - !Ref ProcessedHealthDataBucket
-                  - "/*"
   IAMBridgeServer2ECManagedPolicy:
     Type: 'AWS::IAM::ManagedPolicy'
     Properties:
