@@ -29,6 +29,8 @@ parameters:
   EmailUnsubscribeToken: !ssm /bridgeserver2-common/EmailUnsubscribeToken
   Env: develop
   ExporterRequestSqsQueueUrl: https://sqs.us-east-1.amazonaws.com/420786776710/Bridge-EX-Request-develop
+  ExporterSynapseApiKey: !ssm /bridgeserver2-develop/ExporterSynapseApiKey
+  ExporterSynapseUser: !ssm /bridgeserver2-develop/ExporterSynapseUser
   HibernateConnectionPassword: !ssm /bridgeserver2-develop/HibernateConnectionPassword
   HibernateConnectionUsername: !ssm /bridgeserver2-develop/HibernateConnectionUsername
   HibernateConnectionUsessl: 'true'
