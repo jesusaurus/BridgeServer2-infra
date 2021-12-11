@@ -25,7 +25,7 @@ parameters:
   BucketSuffix: devstaging
   DNSHostname: bridgeserver2-devstaging
   DNSDomain: sagebridge.org
-  EC2InstanceType: t2.small
+  EC2InstanceType: t3a.small
   EmailUnsubscribeToken: !ssm /bridgeserver2-common/EmailUnsubscribeToken
   Env: staging
   ExporterRequestSqsQueueUrl: https://sqs.us-east-1.amazonaws.com/420786776710/Bridge-EX-Request-staging
