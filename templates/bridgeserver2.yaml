@@ -90,14 +90,6 @@ Parameters:
     Type: String
     Description: Instance type to use for Elastic Beanstalk Instances
     Default: t2.small
-    AllowedValues:
-      - t2.nano
-      - t2.micro
-      - t2.small
-      - t2.medium
-      - t2.large
-      - t2.xlarge
-      - t2.2xlarge
   EmailUnsubscribeToken:
     Type: String
     NoEcho: true
