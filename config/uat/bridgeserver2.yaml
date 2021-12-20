@@ -13,11 +13,7 @@ parameters:
   AwsSnsBounceNotificationEndpoint: bridgepf-uat-bounce-notifications@sagebase.org
   AwsSnsNotificationEndpoint: bridgepf-uat@sagebase.org
   BootstrapAdminEmail: !ssm /bridgeserver2-uat/BootstrapAdminEmail
-  BootstrapAdminPassword: !ssm /bridgeserver2-uat/BootstrapAdminPassword
-  BootstrapApiEmail: !ssm /bridgeserver2-uat/BootstrapApiEmail
-  BootstrapApiPassword: !ssm /bridgeserver2-uat/BootstrapApiPassword
-  BootstrapSharedEmail: !ssm /bridgeserver2-uat/BootstrapSharedEmail
-  BootstrapSharedPassword: !ssm /bridgeserver2-uat/BootstrapSharedPassword
+  BootstrapAdminSynapseUserId: !ssm /bridgeserver2-uat/BootstrapAdminSynapseUserId
   BridgeEnv: uat
   BridgeDBStackName: bridgeserver2-db-uat
   BridgeHealthcodeRedisKey: !ssm /bridgeserver2-uat/BridgeHealthcodeRedisKey

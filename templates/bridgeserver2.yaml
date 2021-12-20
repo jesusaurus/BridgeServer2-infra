@@ -29,19 +29,8 @@ Parameters:
     Description: Email address for AWS SNS notifications
   BootstrapAdminEmail:
     Type: String
-  BootstrapAdminPassword:
+  BootstrapAdminSynapseUserId:
     Type: String
-    NoEcho: true
-  BootstrapApiEmail:
-    Type: String
-  BootstrapApiPassword:
-    Type: String
-    NoEcho: true
-  BootstrapSharedEmail:
-    Type: String
-  BootstrapSharedPassword:
-    Type: String
-    NoEcho: true
   BridgeEnv:
     Type: String
     Default: dev
@@ -316,20 +305,8 @@ Resources:
           OptionName: admin.email
           Value: !Ref BootstrapAdminEmail
         - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: admin.password
-          Value: !Ref BootstrapAdminPassword
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: api.developer.email
-          Value: !Ref BootstrapApiEmail
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: api.developer.password
-          Value: !Ref BootstrapApiPassword
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: shared.developer.email
-          Value: !Ref BootstrapSharedEmail
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: shared.developer.password
-          Value: !Ref BootstrapSharedPassword
+          OptionName: admin.synapse.user.id
+          Value: !Ref BootstrapAdminSynapseUserId
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: ENV
           Value: !Ref Env
