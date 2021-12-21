@@ -12,8 +12,7 @@ parameters:
   AwsEbHealthReportingSystem: enhanced
   AwsSnsBounceNotificationEndpoint: bridgepf-uat-bounce-notifications@sagebase.org
   AwsSnsNotificationEndpoint: bridgepf-uat@sagebase.org
-  BootstrapAdminEmail: !ssm /bridgeserver2-uat/BootstrapAdminEmail
-  BootstrapAdminSynapseUserId: !ssm /bridgeserver2-uat/BootstrapAdminSynapseUserId
+  BootstrapAdminPassword: !ssm /bridgeserver2-develop/BootstrapAdminPassword
   BridgeEnv: uat
   BridgeDBStackName: bridgeserver2-db-uat
   BridgeHealthcodeRedisKey: !ssm /bridgeserver2-uat/BridgeHealthcodeRedisKey
