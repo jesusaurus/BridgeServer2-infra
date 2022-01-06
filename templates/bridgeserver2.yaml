@@ -27,8 +27,11 @@ Parameters:
   AwsSnsNotificationEndpoint:
     Type: String
     Description: Email address for AWS SNS notifications
+  BootstrapAdminEmail:
+    Type: String
   BootstrapAdminPassword:
     Type: String
+    NoEcho: true
   BridgeEnv:
     Type: String
     Default: dev
@@ -299,6 +302,9 @@ Resources:
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: aws.secret.key
           Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: admin.email
+          Value: !Ref BootstrapAdminEmail
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: admin.password
           Value: !Ref BootstrapAdminPassword
