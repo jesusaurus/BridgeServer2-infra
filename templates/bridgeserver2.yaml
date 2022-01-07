@@ -32,16 +32,6 @@ Parameters:
   BootstrapAdminPassword:
     Type: String
     NoEcho: true
-  BootstrapApiEmail:
-    Type: String
-  BootstrapApiPassword:
-    Type: String
-    NoEcho: true
-  BootstrapSharedEmail:
-    Type: String
-  BootstrapSharedPassword:
-    Type: String
-    NoEcho: true
   BridgeEnv:
     Type: String
     Default: dev
@@ -318,18 +308,6 @@ Resources:
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: admin.password
           Value: !Ref BootstrapAdminPassword
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: api.developer.email
-          Value: !Ref BootstrapApiEmail
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: api.developer.password
-          Value: !Ref BootstrapApiPassword
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: shared.developer.email
-          Value: !Ref BootstrapSharedEmail
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: shared.developer.password
-          Value: !Ref BootstrapSharedPassword
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: ENV
           Value: !Ref Env

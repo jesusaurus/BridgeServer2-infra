@@ -14,10 +14,6 @@ parameters:
   AwsSnsNotificationEndpoint: bridgepf-develop@sagebase.org
   BootstrapAdminEmail: !ssm /bridgeserver2-develop/BootstrapAdminEmail
   BootstrapAdminPassword: !ssm /bridgeserver2-develop/BootstrapAdminPassword
-  BootstrapApiEmail: !ssm /bridgeserver2-develop/BootstrapApiEmail
-  BootstrapApiPassword: !ssm /bridgeserver2-develop/BootstrapApiPassword
-  BootstrapSharedEmail: !ssm /bridgeserver2-develop/BootstrapSharedEmail
-  BootstrapSharedPassword: !ssm /bridgeserver2-develop/BootstrapSharedPassword
   BridgeEnv: dev
   BridgeDBStackName: bridgeserver2-db-develop
   BridgeHealthcodeRedisKey: !ssm /bridgeserver2-develop/BridgeHealthcodeRedisKey
