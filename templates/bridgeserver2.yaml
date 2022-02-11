@@ -184,7 +184,7 @@ Resources:
     Type: 'AWS::ElasticBeanstalk::ConfigurationTemplate'
     Properties:
       ApplicationName: !ImportValue us-east-1-bridgeserver2-common-BeanstalkAppName
-      SolutionStackName: '64bit Amazon Linux 2018.03 v3.4.10 running Tomcat 8.5 Java 8'
+      SolutionStackName: '64bit Amazon Linux 2 v4.2.11 running Tomcat 8.5 Corretto 8'
       OptionSettings:
         # EB environment options
         - Namespace: 'aws:autoscaling:asg'
@@ -264,6 +264,25 @@ Resources:
         - Namespace: 'aws:elasticbeanstalk:environment:process:default'
           OptionName: HealthCheckPath
           Value: !Ref AppHealthcheckUrl
+        - Namespace: 'aws:elasticbeanstalk:healthreporting:system'
+          OptionName: ConfigDocument
+          Value: '{
+            "Rules": {
+              "Environment": {
+                "Application": {
+                  "ApplicationRequests4xx": {
+                    "Enabled": false
+                  }
+                },
+                "ELB": {
+                  "ELBRequests4xx": {
+                    "Enabled": false
+                  }
+                }
+              }
+            },
+            "Version": 1
+          }'
         - Namespace: 'aws:elasticbeanstalk:healthreporting:system'
           OptionName: SystemType
           Value: !Ref AwsEbHealthReportingSystem
