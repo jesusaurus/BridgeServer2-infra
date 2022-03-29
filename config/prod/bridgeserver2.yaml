@@ -26,6 +26,7 @@ parameters:
   Env: production
   ExporterRequestSqsQueueUrl: https://sqs.us-east-1.amazonaws.com/649232250620/Bridge-EX-Request-prod
   ExporterSynapseApiKey: !ssm /bridgeserver2-prod/ExporterSynapseApiKey
+  ExporterSynapseAccessToken: !ssm /bridgeserver2-prod/ExporterSynapseAccessToken
   ExporterSynapseUser: !ssm /bridgeserver2-prod/ExporterSynapseUser
   HibernateConnectionPassword: !ssm /bridgeserver2-prod/HibernateConnectionPassword
   HibernateConnectionUsername: !ssm /bridgeserver2-prod/HibernateConnectionUsername

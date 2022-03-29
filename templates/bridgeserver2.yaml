@@ -95,6 +95,9 @@ Parameters:
   ExporterSynapseApiKey:
     Type: String
     NoEcho: true
+  ExporterSynapseAccessToken:
+    Type: String
+    NoEcho: true
   ExporterSynapseUser:
     Type: String
   HibernateConnectionPassword:
@@ -367,6 +370,9 @@ Resources:
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: exporter.synapse.api.key
           Value: !Ref ExporterSynapseApiKey
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: exporter.synapse.access.token
+          Value: !Ref ExporterSynapseAccessToken
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: exporter.synapse.user
           Value: !Ref ExporterSynapseUser
