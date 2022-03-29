@@ -35,6 +35,7 @@ parameters:
   NewRelicLicenseKey: !ssm /infra/NewRelicLicenseKey
   SesNotificationTopicArn: arn:aws:sns:us-east-1:420786776710:SNSBounces
   SynapseApiKey: !ssm /bridgeserver2-develop/SynapseApiKey
+  SynapseAccessToken: !ssm /bridgeserver2-develop/SynapseAccessToken
   SynapseUser: !ssm /bridgeserver2-develop/SynapseUser
   SynapseOAuthClientId: !ssm /bridgeserver2-develop/SynapseOAuthClientId
   SynapseOAuthClientSecret: !ssm /bridgeserver2-develop/SynapseOAuthClientSecret
