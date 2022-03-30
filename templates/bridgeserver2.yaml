@@ -95,6 +95,9 @@ Parameters:
   ExporterSynapseApiKey:
     Type: String
     NoEcho: true
+  ExporterSynapseAccessToken:
+    Type: String
+    NoEcho: true
   ExporterSynapseUser:
     Type: String
   HibernateConnectionPassword:
@@ -135,6 +138,9 @@ Parameters:
   SesNotificationTopicArn:
     Type: String
   SynapseApiKey:
+    Type: String
+    NoEcho: true
+  SynapseAccessToken:
     Type: String
     NoEcho: true
   SynapseUser:
@@ -365,6 +371,9 @@ Resources:
           OptionName: exporter.synapse.api.key
           Value: !Ref ExporterSynapseApiKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: exporter.synapse.access.token
+          Value: !Ref ExporterSynapseAccessToken
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: exporter.synapse.user
           Value: !Ref ExporterSynapseUser
         - Namespace: 'aws:elasticbeanstalk:application:environment'
@@ -407,6 +416,9 @@ Resources:
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: synapse.api.key
           Value: !Ref SynapseApiKey
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: synapse.access.token
+          Value: !Ref SynapseAccessToken
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: synapse.user
           Value: !Ref SynapseUser

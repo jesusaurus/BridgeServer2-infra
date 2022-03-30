@@ -26,6 +26,7 @@ parameters:
   Env: production
   ExporterRequestSqsQueueUrl: https://sqs.us-east-1.amazonaws.com/649232250620/Bridge-EX-Request-prod
   ExporterSynapseApiKey: !ssm /bridgeserver2-prod/ExporterSynapseApiKey
+  ExporterSynapseAccessToken: !ssm /bridgeserver2-prod/ExporterSynapseAccessToken
   ExporterSynapseUser: !ssm /bridgeserver2-prod/ExporterSynapseUser
   HibernateConnectionPassword: !ssm /bridgeserver2-prod/HibernateConnectionPassword
   HibernateConnectionUsername: !ssm /bridgeserver2-prod/HibernateConnectionUsername
@@ -35,6 +36,7 @@ parameters:
   NewRelicLicenseKey: !ssm /infra/NewRelicLicenseKey
   SesNotificationTopicArn: arn:aws:sns:us-east-1:649232250620:SNSBounces
   SynapseApiKey: !ssm /bridgeserver2-prod/SynapseApiKey
+  SynapseAccessToken: !ssm /bridgeserver2-prod/SynapseAccessToken
   SynapseUser: !ssm /bridgeserver2-prod/SynapseUser
   SynapseOAuthClientId: !ssm /bridgeserver2-prod/SynapseOAuthClientId
   SynapseOAuthClientSecret: !ssm /bridgeserver2-prod/SynapseOAuthClientSecret
