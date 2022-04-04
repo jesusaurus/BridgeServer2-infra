@@ -25,7 +25,6 @@ parameters:
   EmailUnsubscribeToken: !ssm /bridgeserver2-common/EmailUnsubscribeToken
   Env: staging
   ExporterRequestSqsQueueUrl: https://sqs.us-east-1.amazonaws.com/420786776710/Bridge-EX-Request-staging
-  ExporterSynapseApiKey: !ssm /bridgeserver2-uat/ExporterSynapseApiKey
   ExporterSynapseAccessToken: !ssm /bridgeserver2-uat/ExporterSynapseAccessToken
   ExporterSynapseUser: !ssm /bridgeserver2-uat/ExporterSynapseUser
   HibernateConnectionPassword: !ssm /bridgeserver2-uat/HibernateConnectionPassword
@@ -35,7 +34,6 @@ parameters:
   NewRelicAppName: bridgeserver2-devstaging
   NewRelicLicenseKey: !ssm /infra/NewRelicLicenseKey
   SesNotificationTopicArn: arn:aws:sns:us-east-1:420786776710:SNSBounces
-  SynapseApiKey: !ssm /bridgeserver2-uat/SynapseApiKey
   SynapseAccessToken: !ssm /bridgeserver2-uat/SynapseAccessToken
   SynapseUser: !ssm /bridgeserver2-uat/SynapseUser
   SynapseOAuthClientId: !ssm /bridgeserver2-uat/SynapseOAuthClientId
