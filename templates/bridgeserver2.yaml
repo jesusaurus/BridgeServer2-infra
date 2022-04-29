@@ -959,6 +959,7 @@ Resources:
                     - ':root'
                 - !ImportValue us-east-1-bootstrap-CfServiceRoleArn
                 - !GetAtt AWSIAMBridgeServer2ServiceUser2.Arn
+                - !GetAtt AWSIAMRole.Arn
                 - !ImportValue us-east-1-bridgeserver2-common-BeanstalkServiceRoleArn
             Action:
               - "kms:Encrypt"
