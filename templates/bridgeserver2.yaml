@@ -156,7 +156,6 @@ Parameters:
       - false
     ConstraintDescription: must be either true or false
 Conditions:
-  CreateDevResources: !Equals [ !Ref BridgeEnv, dev ]
   CreateR53Record: !Equals [ !Ref BridgeEnv, prod ]
 Resources:
   LoadBalancerAccessLogsBucket:
@@ -315,12 +314,6 @@ Resources:
           OptionName: SSLPolicy
           Value: ELBSecurityPolicy-TLS-1-2-2017-01
         # Application environment options
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: aws.key
-          Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
-        - Namespace: 'aws:elasticbeanstalk:application:environment'
-          OptionName: aws.secret.key
-          Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
         - Namespace: 'aws:elasticbeanstalk:application:environment'
           OptionName: admin.email
           Value: !Ref BootstrapAdminEmail
@@ -614,8 +607,8 @@ Resources:
         - 'arn:aws:iam::aws:policy/AmazonSNSFullAccess'
         - 'arn:aws:iam::aws:policy/AmazonSESFullAccess'
         - 'arn:aws:iam::aws:policy/AmazonRDSFullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonSQSFullAccess'
         - !Ref IAMBridgeServer2ECManagedPolicy
-        - !Ref IAMBridgeServer2SQSManagedPolicy
         - !Ref AWSIAMCloudwatchIntegrationManagedPolicy
   AWSIAMInstanceProfile:
     Type: 'AWS::IAM::InstanceProfile'
@@ -853,64 +846,6 @@ Resources:
             Action:
               - elasticache:*
             Resource: "*"
-  IAMBridgeServer2SQSManagedPolicy:
-    Type: 'AWS::IAM::ManagedPolicy'
-    Properties:
-        PolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-          - Effect: Deny
-            Action:
-              - sqs:CreateQueue
-            Resource: "*"
-          - Effect: Allow
-            Action:
-              - sqs:*
-            Resource: "*"
-  # !! IMPORTANT !! - AWS API will refuse to remove users that have attached resources.
-  # Therefore you must do the following before deleting them from this file:
-  # 1. Detach or remove the following user resources: login profile, attached
-  #    MFA device, access-keys, ssh-keys, and policies.
-  # 2. Detach the user from all groups.
-  AWSIAMBridgeServer2ServiceUserAccessKey:
-    Type: 'AWS::IAM::AccessKey'
-    Properties:
-      UserName: !Ref AWSIAMBridgeServer2ServiceUser2
-  AWSIAMBridgeServer2ServiceUser2:
-    Type: 'AWS::IAM::User'
-    Properties:
-      Groups:
-        - !Ref AWSIAMBridgeServer2ServiceUserGroup
-  AWSIAMBridgeServer2ServiceUserGroup:
-    Type: 'AWS::IAM::Group'
-    Properties:
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonS3FullAccess
-        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
-        - arn:aws:iam::aws:policy/AmazonSNSFullAccess
-        - arn:aws:iam::aws:policy/AmazonSESFullAccess
-        - arn:aws:iam::aws:policy/AmazonRDSFullAccess
-        - !Ref IAMBridgeServer2ECManagedPolicy
-        - !Ref IAMBridgeServer2SQSManagedPolicy
-  # special service user for developer testing
-  AWSIAMBridgeServer2LocalServiceUserAccessKey:
-    Type: 'AWS::IAM::AccessKey'
-    Condition: CreateDevResources
-    Properties:
-      UserName: !Ref AWSIAMBridgeServer2LocalServiceUser2
-  AWSIAMBridgeServer2LocalServiceUser2:
-    Type: 'AWS::IAM::User'
-    Condition: CreateDevResources
-    Properties:
-      Groups:
-        - !Ref AWSIAMBridgeServer2ServiceUserGroup
-        - !Ref AWSIAMBridgeServer2LocalServiceUserGroup
-  AWSIAMBridgeServer2LocalServiceUserGroup:
-    Type: 'AWS::IAM::Group'
-    Condition: CreateDevResources
-    Properties:
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonS3FullAccess
   # KMS Keys
   AWSKmsKey:
     Type: "AWS::KMS::Key"
@@ -958,7 +893,6 @@ Resources:
                     - !Ref AWS::AccountId
                     - ':root'
                 - !ImportValue us-east-1-bootstrap-CfServiceRoleArn
-                - !GetAtt AWSIAMBridgeServer2ServiceUser2.Arn
                 - !GetAtt AWSIAMRole.Arn
                 - !ImportValue us-east-1-bridgeserver2-common-BeanstalkServiceRoleArn
             Action:
@@ -1046,21 +980,3 @@ Outputs:
     Value: !Ref AWSEC2SecurityGroup
     Export:
       Name: !Sub '${AWS::Region}-${AWS::StackName}-EC2SecurityGroup'
-  AWSIAMBridgeServer2ServiceUserAccessKey:
-    Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
-    Export:
-      Name: !Sub '${AWS::Region}-${AWS::StackName}-BridgeServer2ServiceUserAccessKey'
-  AWSIAMBridgeServer2ServiceUserSecretAccessKey:
-    Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
-    Export:
-      Name: !Sub '${AWS::Region}-${AWS::StackName}-BridgeServer2ServiceUserSecretAccessKey'
-  AWSIAMBridgeServer2LocalServiceUserAccessKey:
-    Condition: CreateDevResources
-    Value: !Ref AWSIAMBridgeServer2LocalServiceUserAccessKey
-    Export:
-      Name: !Sub '${AWS::Region}-${AWS::StackName}-BridgeServer2LocalServiceUserAccessKey'
-  AWSIAMBridgeServer2LocalServiceUserSecretAccessKey:
-    Condition: CreateDevResources
-    Value: !GetAtt AWSIAMBridgeServer2LocalServiceUserAccessKey.SecretAccessKey
-    Export:
-      Name: !Sub '${AWS::Region}-${AWS::StackName}-BridgeServer2LocalServiceUserSecretAccessKey'
