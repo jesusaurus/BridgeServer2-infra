@@ -846,6 +846,26 @@ Resources:
             Action:
               - elasticache:*
             Resource: "*"
+  AWSIAMBridgeServer2ServiceUserAccessKey:
+    Type: 'AWS::IAM::AccessKey'
+    Properties:
+      UserName: !Ref AWSIAMBridgeServer2ServiceUser2
+  AWSIAMBridgeServer2ServiceUser2:
+    Type: 'AWS::IAM::User'
+    Properties:
+      Groups:
+        - !Ref AWSIAMBridgeServer2ServiceUserGroup
+  AWSIAMBridgeServer2ServiceUserGroup:
+    Type: 'AWS::IAM::Group'
+    Properties:
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+        - arn:aws:iam::aws:policy/AmazonSNSFullAccess
+        - arn:aws:iam::aws:policy/AmazonSESFullAccess
+        - arn:aws:iam::aws:policy/AmazonRDSFullAccess
+        - 'arn:aws:iam::aws:policy/AmazonSQSFullAccess'
+        - !Ref IAMBridgeServer2ECManagedPolicy
   # KMS Keys
   AWSKmsKey:
     Type: "AWS::KMS::Key"
@@ -980,3 +1000,11 @@ Outputs:
     Value: !Ref AWSEC2SecurityGroup
     Export:
       Name: !Sub '${AWS::Region}-${AWS::StackName}-EC2SecurityGroup'
+  AWSIAMBridgeServer2ServiceUserAccessKey:
+    Value: !Ref AWSIAMBridgeServer2ServiceUserAccessKey
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-BridgeServer2ServiceUserAccessKey'
+  AWSIAMBridgeServer2ServiceUserSecretAccessKey:
+    Value: !GetAtt AWSIAMBridgeServer2ServiceUserAccessKey.SecretAccessKey
+    Export:
+      Name: !Sub '${AWS::Region}-${AWS::StackName}-BridgeServer2ServiceUserSecretAccessKey'
