@@ -478,7 +478,6 @@ Resources:
       CacheNodeType: cache.t2.micro
       NumCacheNodes: 1
       VpcSecurityGroupIds:
-        - !ImportValue us-east-1-BridgeServer2-vpc-VpnSecurityGroup
         - !GetAtt ElasticacheSecurityGroup.GroupId
       CacheSubnetGroupName: !Ref ElasticacheSubnetGroup
   AWSEC2SecurityGroup:
