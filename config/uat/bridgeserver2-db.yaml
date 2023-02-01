@@ -5,3 +5,4 @@ depedencies:
 parameters:
   HibernateConnectionPassword: !ssm /bridgeserver2-uat/HibernateConnectionPassword
   HibernateConnectionUsername: !ssm /bridgeserver2-uat/HibernateConnectionUsername
+  MySqlVersion: '5.6.10a'

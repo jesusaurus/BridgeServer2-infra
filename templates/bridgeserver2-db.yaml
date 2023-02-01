@@ -22,6 +22,8 @@ Parameters:
   HibernateConnectionUsername:
     Type: String
     NoEcho: true
+  MySqlVersion:
+    Type: String
 Resources:
   DBCluster:
     Type: AWS::RDS::DBCluster
@@ -37,7 +39,7 @@ Resources:
       DeletionProtection: true
       Engine: 'aurora'
       EngineMode: 'provisioned'
-      EngineVersion: '5.6.10a'
+      EngineVersion: !Ref MySqlVersion
       MasterUsername: !Ref HibernateConnectionUsername
       MasterUserPassword: !Ref HibernateConnectionPassword
       Port: 3306

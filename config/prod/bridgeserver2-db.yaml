@@ -7,3 +7,4 @@ parameters:
   DatabaseInstanceType: db.t2.medium
   HibernateConnectionPassword: !ssm /bridgeserver2-prod/HibernateConnectionPassword
   HibernateConnectionUsername: !ssm /bridgeserver2-prod/HibernateConnectionUsername
+  MySqlVersion: '5.6.10a'
