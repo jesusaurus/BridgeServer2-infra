@@ -1,0 +1,276 @@
+Description: Templated used to set up antivirus scanning of S3 bucket
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  CodeZipS3BucketParameter:
+    Type: String
+    Description: The name of the S3 bucket where the .zip file for the Lambda code resides
+  CodeZipS3KeyParameter:
+    Type: String
+    Description: The name of the S3 key where the .zip file for the Lambda code resides
+  ScanTriggerSNSTopicArn:
+    Type: String
+    Description: SNS topic arn that the Lambda function should listen to scan incoming files
+  ScanResultSNSTopicArn:
+    Type: String
+    Description: SNS topic that the Lambda function should publish results to
+Resources:
+  # Triggers the VirusScanStackInitLambda to run once
+  VirusScanStackInit:
+    Type: 'AWS::CloudFormation::CustomResource'
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt 
+        - VirusScanStackInitLambda
+        - Arn
+      VirusDefinitionUpdateLambdaName: !Ref VirusScanDefinitionUpdaterLambda
+  # Triggers the VirusScanDefinitionUpdaterLambda to run once. This is needed because we
+  # need to return the success code to CloudFormation, and the Update Lambda doesn't do that.
+  VirusScanStackInitLambda:
+    Type: 'AWS::Lambda::Function'
+    DependsOn:
+      - VirusScanDefinitionUpdaterLambda
+    Properties:
+      Code:
+        ZipFile: !Join
+          - "\n"
+          - - "import json"
+            - "import cfnresponse"
+            - "import boto3"
+            - "def lambda_handler(event, context):"
+            - "   print(event)"
+            - "   responseData = {}"
+            - "   responseData['Data'] = ''"
+            - "   try:"
+            - "      if event['RequestType'] == 'Create':"
+            - "         print('triggering virus definition update lambda function')"
+            - "         lambda_client = boto3.client('lambda')"
+            - "         lambda_client.invoke(FunctionName=event['ResourceProperties']['VirusDefinitionUpdateLambdaName'],InvocationType='Event')"
+            - "      cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData)"
+            - "   except:"
+            - "      cfnresponse.send(event, context, cfnresponse.FAILED, responseData)"
+            - "      raise"
+      Handler: index.lambda_handler
+      Role: !GetAtt
+        - VirusScanStackInitRole
+        - Arn
+      Runtime: python3.7
+      Timeout: 100
+  CloudWatchTimer:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      ScheduleExpression: rate(3 hours)
+      Targets:
+        - Arn: !GetAtt 
+            - VirusScanDefinitionUpdaterLambda
+            - Arn
+          Id: 3hour-update-definitions
+  VirusDefinitionUpdaterLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !GetAtt 
+        - VirusScanDefinitionUpdaterLambda
+        - Arn
+      Action: 'lambda:invokeFunction'
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt 
+        - CloudWatchTimer
+        - Arn
+  VirusScannerLambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !GetAtt 
+        - VirusScannerLambda
+        - Arn
+      Action: 'lambda:invokeFunction'
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref ScanTriggerSNSTopicArn
+  VirusScanLambdaSnsSubscription:
+    Type: 'AWS::SNS::Subscription'
+    Properties:
+      Endpoint: !GetAtt
+        - VirusScannerLambda
+        - Arn
+      Protocol: 'lambda'
+      TopicArn: !Ref ScanTriggerSNSTopicArn
+  VirusScannerLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        S3Bucket: !Ref CodeZipS3BucketParameter
+        S3Key: !Ref CodeZipS3KeyParameter
+      Description: Scans a file that was uploaded to S3
+      Role: !GetAtt 
+        - VirusScannerRole
+        - Arn
+      Timeout: 300
+      Runtime: python3.7
+      Handler: scan.lambda_handler
+      Environment:
+        Variables:
+          AV_DEFINITION_S3_BUCKET: !Ref ClamavVirusDefinitionsBucket
+          AV_SCAN_MAX_FILE_SIZE_BYTES: '50000000'
+          AV_STATUS_SNS_ARN: !Ref ScanResultSNSTopicArn
+          AV_STATUS_SNS_PUBLISH_CLEAN: 'False'
+          EVENT_SOURCE: SNS
+      MemorySize: 2048
+      DeadLetterConfig:
+        TargetArn: !GetAtt 
+          - VirusScanDeadLetterQueue
+          - Arn
+  VirusScanDefinitionUpdaterLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        S3Bucket: !Ref CodeZipS3BucketParameter
+        S3Key: !Ref CodeZipS3KeyParameter
+      Description: Fetches latest ClamAV virus definitions and puts then into an S3 bucket
+      Role: !GetAtt 
+        - VirusDefinitionUpdateRole
+        - Arn
+      Timeout: 300
+      Runtime: python3.7
+      Handler: update.lambda_handler
+      Environment:
+        Variables:
+          AV_DEFINITION_S3_BUCKET: !Ref ClamavVirusDefinitionsBucket
+      MemorySize: 1024
+  ClamavVirusDefinitionsBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties: {}
+  VirusScanDeadLetterQueue:
+    Type: 'AWS::SQS::Queue'
+    Properties: {}
+  VirusScanStackInitRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: virus-scan-stack-init-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'lambda:InvokeFunction'
+                Resource: !GetAtt
+                  - VirusScanDefinitionUpdaterLambda
+                  - Arn
+  VirusDefinitionUpdateRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: clamav-updater-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: '*'
+              - Action:
+                  - 's3:GetObject'
+                  - 's3:GetObjectTagging'
+                  - 's3:PutObject'
+                  - 's3:PutObjectTagging'
+                  - 's3:PutObjectVersionTagging'
+                Effect: Allow
+                Resource: !Join 
+                  - ''
+                  - - !GetAtt 
+                      - ClamavVirusDefinitionsBucket
+                      - Arn
+                    - /*
+              - Action:
+                  - 's3:ListBucket'
+                Effect: Allow
+                Resource: !GetAtt 
+                  - ClamavVirusDefinitionsBucket
+                  - Arn
+  VirusScannerRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: clamav-scanner-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: '*'
+              - Action:
+                  - 's3:GetObject'
+                  - 's3:GetObjectTagging'
+                  - 's3:PutObjectTagging'
+                  - 's3:PutObjectVersionTagging'
+                Effect: Allow
+                Resource: '*'
+              - Action:
+                  - 's3:ListBucket'
+                Effect: Allow
+                Resource: '*'
+              - Action:
+                  - 's3:GetObject'
+                  - 's3:GetObjectTagging'
+                  - 's3:PutObject'
+                  - 's3:PutObjectTagging'
+                  - 's3:PutObjectVersionTagging'
+                Effect: Allow
+                Resource: !Join 
+                  - ''
+                  - - !GetAtt 
+                      - ClamavVirusDefinitionsBucket
+                      - Arn
+                    - /*
+              - Action:
+                  - 's3:ListBucket'
+                Effect: Allow
+                Resource: !GetAtt 
+                  - ClamavVirusDefinitionsBucket
+                  - Arn
+              - Action:
+                  - 'sns:Publish'
+                  - 'sns:Subscribe'
+                Effect: Allow
+                Resource:
+                  - !Ref ScanResultSNSTopicArn
+              - Action:
+                  - 'sqs:SendMessage'
+                Effect: Allow
+                Resource:
+                  - !GetAtt 
+                    - VirusScanDeadLetterQueue
+                    - Arn
