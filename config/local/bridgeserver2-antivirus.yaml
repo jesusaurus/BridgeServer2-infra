@@ -1,0 +1,7 @@
+template_path: bridgeserver2-antivirus.yaml
+stack_name: bridgeserver2-antivirus-local-djeng
+parameters:
+  CodeZipS3BucketParameter: org-sagebridge-deployments-devdevelop
+  CodeZipS3KeyParameter: virus-scanner-lambda-20230206-af70cfc.zip
+  ScanTriggerSNSTopicArn: arn:aws:sns:us-east-1:420786776710:virus-scan-trigger-devlocal-dwaynejeng
+  ScanResultSNSTopicArn: arn:aws:sns:us-east-1:420786776710:virus-scan-result-devlocal-dwaynejeng
