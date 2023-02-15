@@ -487,6 +487,8 @@ Resources:
         - '-'
         - - !Ref 'AWS::StackName'
           - ElasticacheReplicationGroup
+      AutomaticFailoverEnabled: false
+      EngineVersion: '6.0'
       PrimaryClusterId: !Ref ElasticacheCluster
       ReplicasPerNodeGroup: 1
   AWSEC2SecurityGroup:
