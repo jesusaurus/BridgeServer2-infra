@@ -1,7 +1,9 @@
 template_path: bridgeserver2-antivirus.yaml
 stack_name: bridgeserver2-antivirus-prod
 parameters:
+  AlarmEmail: bridgeop@sagebase.org
   CodeZipS3BucketParameter: org-sagebridge-deployments-prod
   CodeZipS3KeyParameter: virus-scanner-lambda-20230206-af70cfc.zip
   ScanTriggerSNSTopicArn: arn:aws:sns:us-east-1:649232250620:virus-scan-trigger-prod
   ScanResultSNSTopicArn: arn:aws:sns:us-east-1:649232250620:virus-scan-result-prod
+  SumoLogicHttpEndpoint: https://endpoint1.collection.us2.sumologic.com/receiver/v1/http/ZaVnC4dhaV1VtG5IrJWZhlKN38QAE9VA51f9HkKJnTUryI3NYMMrdNqd5B3OkiyKl9pKu-eyfPxT-cd-lVA3-7axHbByP9eIFU0F4rybo7PBXVPQZFXHoA==
