@@ -1,6 +1,9 @@
 Description: Templated used to set up antivirus scanning of S3 bucket
 AWSTemplateFormatVersion: 2010-09-09
 Parameters:
+  AlarmEmail:
+    Type: String
+    Description: Email address to which to send alarm notifications
   CodeZipS3BucketParameter:
     Type: String
     Description: The name of the S3 bucket where the .zip file for the Lambda code resides
@@ -13,6 +16,9 @@ Parameters:
   ScanResultSNSTopicArn:
     Type: String
     Description: SNS topic that the Lambda function should publish results to
+  SumoLogicHttpEndpoint:
+    Type: String
+    Description: SumoLogic URL for logging
 Resources:
   # Triggers the VirusScanStackInitLambda to run once
   VirusScanStackInit:
@@ -99,6 +105,10 @@ Resources:
         S3Bucket: !Ref CodeZipS3BucketParameter
         S3Key: !Ref CodeZipS3KeyParameter
       Description: Scans a file that was uploaded to S3
+      # SumoLogic logging layer. See instructions on https://help.sumologic.com/docs/send-data/collect-from-other-data-sources/collect-aws-lambda-logs-extension/
+      # See https://github.com/SumoLogic/sumologic-lambda-extensions/releases for the latest release
+      Layers:
+        - arn:aws:lambda:us-east-1:956882708938:layer:sumologic-extension-amd64:7
       Role: !GetAtt 
         - VirusScannerRole
         - Arn
@@ -112,11 +122,54 @@ Resources:
           AV_STATUS_SNS_ARN: !Ref ScanResultSNSTopicArn
           AV_STATUS_SNS_PUBLISH_CLEAN: 'False'
           EVENT_SOURCE: SNS
+          SUMO_HTTP_ENDPOINT: !Ref SumoLogicHttpEndpoint
+          SUMO_MAX_RETRY: '1'
       MemorySize: 2048
       DeadLetterConfig:
         TargetArn: !GetAtt 
           - VirusScanDeadLetterQueue
           - Arn
+  # This is separate from the one defined in bridgeserver2.yaml so that I can test it locally.
+  VirusScannerLambdaAlarmTopic:
+    Type: 'AWS::SNS::Topic'
+    Properties:
+      Subscription:
+        -
+          Endpoint: !Ref AlarmEmail
+          Protocol: 'email'
+  VirusScannerLambdaErrorAlarm:
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref VirusScannerLambdaAlarmTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: !Join
+        - '-'
+        - - !Ref 'AWS::StackName'
+          - ErrorCount
+      Namespace: LogMetrics/Errors
+      Period: 3600
+      Statistic: Sum
+      Threshold: 10
+      TreatMissingData: notBreaching
+  VirusScannerLambdaErrorMetric:
+    Type: "AWS::Logs::MetricFilter"
+    Properties:
+      LogGroupName: !Join
+        - ''
+        - - /aws/lambda/
+          - !Ref VirusScannerLambda
+      FilterPattern: 'ERROR'
+      MetricTransformations:
+        -
+          MetricValue: "1"
+          MetricNamespace: "LogMetrics/Errors"
+          MetricName: !Join
+            - '-'
+            - - !Ref 'AWS::StackName'
+              - ErrorCount
   VirusScanDefinitionUpdaterLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
