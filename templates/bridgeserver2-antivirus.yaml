@@ -170,6 +170,23 @@ Resources:
             - '-'
             - - !Ref 'AWS::StackName'
               - ErrorCount
+  VirusScannerLambdaThrottlingAlarm:
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref VirusScannerLambdaAlarmTopic
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref VirusScannerLambda
+      EvaluationPeriods: 1
+      MetricName: Throttles
+      Namespace: AWS/Lambda
+      Period: 3600
+      Statistic: Sum
+      Threshold: 1
+      TreatMissingData: notBreaching
   VirusScanDefinitionUpdaterLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
