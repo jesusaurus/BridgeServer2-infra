@@ -161,7 +161,7 @@ Resources:
         - ''
         - - /aws/lambda/
           - !Ref VirusScannerLambda
-      FilterPattern: 'ERROR'
+      FilterPattern: 'ERROR -"Not Found" -NoSuchKey -MethodNotAllowed'
       MetricTransformations:
         -
           MetricValue: "1"
