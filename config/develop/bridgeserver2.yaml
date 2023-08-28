@@ -21,7 +21,7 @@ parameters:
   BucketSuffix: devdevelop
   DNSHostname: bridgeserver2-devdevelop
   DNSDomain: sagebridge.org
-  EC2InstanceType: t3a.small
+  EC2InstanceType: t3a.medium
   EmailUnsubscribeToken: !ssm /bridgeserver2-common/EmailUnsubscribeToken
   Env: develop
   ExporterRequestSqsQueueUrl: https://sqs.us-east-1.amazonaws.com/420786776710/Bridge-EX-Request-develop
