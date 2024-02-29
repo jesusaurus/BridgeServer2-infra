@@ -199,6 +199,12 @@ Resources:
           OptionName: InstanceType
           Value: !Ref EC2InstanceType
         - Namespace: 'aws:autoscaling:launchconfiguration'
+          OptionName: RootVolumeType
+          Value: gp3
+        - Namespace: 'aws:autoscaling:launchconfiguration'
+          OptionName: RootVolumeSize
+          Value: '16'
+        - Namespace: 'aws:autoscaling:launchconfiguration'
           OptionName: SecurityGroups
           Value: !Ref AWSEC2SecurityGroup
         - Namespace: 'aws:autoscaling:updatepolicy:rollingupdate'
