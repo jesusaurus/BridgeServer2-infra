@@ -183,7 +183,7 @@ Resources:
     Type: 'AWS::ElasticBeanstalk::ConfigurationTemplate'
     Properties:
       ApplicationName: !ImportValue us-east-1-bridgeserver2-common-BeanstalkAppName
-      SolutionStackName: '64bit Amazon Linux 2 v4.2.11 running Tomcat 8.5 Corretto 8'
+      SolutionStackName: '64bit Amazon Linux 2 v4.7.0 running Tomcat 9 Corretto 8'
       OptionSettings:
         # EB environment options
         - Namespace: 'aws:autoscaling:asg'
@@ -647,6 +647,18 @@ Resources:
         -
           Endpoint: !Ref AwsSnsNotificationEndpoint
           Protocol: "email"
+  # Create a new log group as part of the migration to tomcat9
+  # Remove the version from the log group for future reusability
+  TomcatLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Join
+        - '/'
+        - - /aws/elasticbeanstalk
+          - !Ref 'AWS::StackName'
+          - var/log/tomcat/catalina.out
+      RetentionInDays: 90
+  # Deprecated log group
   AWSLogsLogGroup:
     Type: "AWS::Logs::LogGroup"
     Properties:
@@ -656,6 +668,24 @@ Resources:
           - !Ref 'AWS::StackName'
           - var/log/tomcat8/catalina.out
       RetentionInDays: 90
+  AWSCWTomcatRequestErrorMetricFilter:
+    Type: "AWS::Logs::MetricFilter"
+    DependsOn: AWSLogsLogGroup
+    Properties:
+      LogGroupName: !Join
+        - '/'
+        - - /aws/elasticbeanstalk
+          - !Ref 'AWS::StackName'
+          - var/log/tomcat/catalina.out
+      FilterPattern: 'ERROR - org.hibernate'
+      MetricTransformations:
+        -
+          MetricValue: "1"
+          MetricNamespace: "LogMetrics/Errors"
+          MetricName: !Join
+            - '-'
+            - - !Ref 'AWS::StackName'
+              - ErrorCount
   AWSCWRequestErrorMetricFilter:
     Type: "AWS::Logs::MetricFilter"
     DependsOn: AWSLogsLogGroup
@@ -691,6 +721,24 @@ Resources:
       Statistic: Sum
       Threshold: 10
       TreatMissingData: notBreaching
+  AWSCWTomcatRequestWarningMetricFilter:
+    Type: "AWS::Logs::MetricFilter"
+    DependsOn: AWSLogsLogGroup
+    Properties:
+      LogGroupName: !Join
+        - '/'
+        - - /aws/elasticbeanstalk
+          - !Ref 'AWS::StackName'
+          - var/log/tomcat/catalina.out
+      FilterPattern: 'WARN'
+      MetricTransformations:
+        -
+          MetricValue: "1"
+          MetricNamespace: "LogMetrics/Warnings"
+          MetricName: !Join
+            - '-'
+            - - !Ref 'AWS::StackName'
+              - WarningCount
   AWSCWRequestWarningMetricFilter:
     Type: "AWS::Logs::MetricFilter"
     DependsOn: AWSLogsLogGroup
@@ -726,6 +774,24 @@ Resources:
       Statistic: Sum
       Threshold: 100
       TreatMissingData: notBreaching
+  AWSCWTomcatThroughputExceptionMetricFilter:
+    Type: "AWS::Logs::MetricFilter"
+    DependsOn: AWSLogsLogGroup
+    Properties:
+      LogGroupName: !Join
+        - '/'
+        - - /aws/elasticbeanstalk
+          - !Ref 'AWS::StackName'
+          - var/log/tomcat/catalina.out
+      FilterPattern: 'ProvisionedThroughputExceededException'
+      MetricTransformations:
+        -
+          MetricValue: "1"
+          MetricNamespace: "LogMetrics/Exceptions"
+          MetricName: !Join
+            - '-'
+            - - !Ref 'AWS::StackName'
+              - ThroughputExceededExceptionCount
   AWSCWThroughputExceptionMetricFilter:
     Type: "AWS::Logs::MetricFilter"
     DependsOn: AWSLogsLogGroup
@@ -761,6 +827,24 @@ Resources:
       Statistic: Sum
       Threshold: 1
       TreatMissingData: notBreaching
+  AWSCWTomcat4XXMetricFilter:
+    Type: "AWS::Logs::MetricFilter"
+    DependsOn: AWSLogsLogGroup
+    Properties:
+      LogGroupName: !Join
+        - '/'
+        - - /aws/elasticbeanstalk
+          - !Ref 'AWS::StackName'
+          - var/log/tomcat/catalina.out
+      FilterPattern: '{ ($.status >= 400) && ($.status < 500) && ($.status != 401) }'
+      MetricTransformations:
+        -
+          MetricValue: "1"
+          MetricNamespace: "LogMetrics/4XXs"
+          MetricName: !Join
+            - '-'
+            - - !Ref 'AWS::StackName'
+              - 4XXCount
   AWSCW4XXMetricFilter:
     Type: "AWS::Logs::MetricFilter"
     DependsOn: AWSLogsLogGroup
