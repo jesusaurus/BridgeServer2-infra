@@ -670,7 +670,7 @@ Resources:
       RetentionInDays: 90
   AWSCWTomcatRequestErrorMetricFilter:
     Type: "AWS::Logs::MetricFilter"
-    DependsOn: AWSLogsLogGroup
+    DependsOn: TomcatLogGroup
     Properties:
       LogGroupName: !Join
         - '/'
@@ -723,7 +723,7 @@ Resources:
       TreatMissingData: notBreaching
   AWSCWTomcatRequestWarningMetricFilter:
     Type: "AWS::Logs::MetricFilter"
-    DependsOn: AWSLogsLogGroup
+    DependsOn: TomcatLogGroup
     Properties:
       LogGroupName: !Join
         - '/'
@@ -776,7 +776,7 @@ Resources:
       TreatMissingData: notBreaching
   AWSCWTomcatThroughputExceptionMetricFilter:
     Type: "AWS::Logs::MetricFilter"
-    DependsOn: AWSLogsLogGroup
+    DependsOn: TomcatLogGroup
     Properties:
       LogGroupName: !Join
         - '/'
@@ -829,7 +829,7 @@ Resources:
       TreatMissingData: notBreaching
   AWSCWTomcat4XXMetricFilter:
     Type: "AWS::Logs::MetricFilter"
-    DependsOn: AWSLogsLogGroup
+    DependsOn: TomcatLogGroup
     Properties:
       LogGroupName: !Join
         - '/'
