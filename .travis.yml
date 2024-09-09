@@ -10,7 +10,7 @@ branches:
   - prod
 install:
   - ./setup_aws_cli.sh || travis_terminate 1
-  - pip install cfn-lint==0.28.0 sceptre sceptre-ssm-resolver
+  - pip install cfn-lint==0.77.10 sceptre sceptre-ssm-resolver
 stages:
   - name: validate
   - name: deploy

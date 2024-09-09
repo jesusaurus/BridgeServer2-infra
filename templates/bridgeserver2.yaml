@@ -477,6 +477,15 @@ Resources:
         - !ImportValue us-east-1-BridgeServer2-vpc-PrivateSubnet
         - !ImportValue us-east-1-BridgeServer2-vpc-PrivateSubnet1
         - !ImportValue us-east-1-BridgeServer2-vpc-PrivateSubnet2
+  ElasticacheLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Join
+        - '/'
+        - - /aws/elasticbeanstalk
+          - !Ref 'AWS::StackName'
+          - var/log/redis-engine.log
+      RetentionInDays: 90
   ElasticacheCluster:
     Type: 'AWS::ElastiCache::CacheCluster'
     Properties:
@@ -486,6 +495,13 @@ Resources:
       VpcSecurityGroupIds:
         - !GetAtt ElasticacheSecurityGroup.GroupId
       CacheSubnetGroupName: !Ref ElasticacheSubnetGroup
+      LogDeliveryConfigurations:
+        - LogType: engine-log
+          LogFormat: json
+          DestinationType: cloudwatch-logs
+          DestinationDetails:
+            CloudWatchLogsDetails:
+              LogGroup: !Ref ElasticacheLogGroup
   ElasticacheReplicationGroup:
     Type: 'AWS::ElastiCache::ReplicationGroup'
     Properties:
